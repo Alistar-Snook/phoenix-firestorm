@@ -239,6 +239,7 @@ set_target_properties(
     firestorm-bin PROPERTIES
     VS_DEBUGGER_WORKING_DIRECTORY "..\\..\\indra\\newview")
 
+ 
 add_subdirectory(${VIEWER_PREFIX}doxygen EXCLUDE_FROM_ALL)
 
 # sets the 'startup project' for debugging from visual studio.
