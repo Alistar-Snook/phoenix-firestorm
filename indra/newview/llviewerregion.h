@@ -384,6 +384,10 @@ public:
     const std::vector<std::string> getStunServers() const { return mStunServers; }
 #endif // OPENSIM
 // </FS:CR>
+    bool groupChatPostLinksEnabled() const;
+
+    // does the simulator accept GameControlData messages?
+    bool gameControlEnabled() const;
 
     typedef enum
     {
