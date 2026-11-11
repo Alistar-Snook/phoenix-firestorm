@@ -27,8 +27,7 @@
 #include "fsyspath.h"
 #include "llfloaterconversationpreview.h"
 #include "llfloaterreg.h"
-#include "llfloaterimsessiontab.h"
-#include "llfloaterimsession.h"
+#include "fsfloaterim.h"
 #include "llimview.h"
 #include "lllogchat.h"
 #include "llmutelist.h"
@@ -1739,7 +1738,7 @@ void runDelete(U32 epoch)
             }
         }
 
-        LLFloaterIMSessionTab::processChatHistoryStyleUpdate(true);
+        FSFloaterIM::processChatHistoryStyleUpdate(true);
         return true;
     });
     requireRuntime(epoch);
@@ -1968,7 +1967,7 @@ void manager(U32 epoch)
                 LLLogChat::notifyTranscriptCreated();
                 if (!LLChatServiceHistory::historySuppressed())
                 {
-                    LLFloaterIMSessionTab::processChatHistoryStyleUpdate(true);
+                    FSFloaterIM::processChatHistoryStyleUpdate(true);
                 }
             });
             if (state.safety == STATE_SAFE && state.cleanup_pending)
@@ -2330,7 +2329,7 @@ void LLChatServiceHistory::start()
                 {
                     postPresentation([]()
                     {
-                        LLFloaterIMSessionTab::processChatHistoryStyleUpdate(true);
+                        FSFloaterIM::processChatHistoryStyleUpdate(true);
                     });
                 });
     }
@@ -2549,10 +2548,10 @@ static LLChatServiceHistory::Messages composeHistory(
 
     // Preview has no live rows. An IM session supplies only its append-only deliveries.
     Messages live;
-    LLFloaterIMSession* floater = nullptr;
+    FSFloaterIM* floater = nullptr;
     if (session_id.notNull())
     {
-        floater = LLFloaterIMSession::findInstance(session_id);
+        floater = FSFloaterIM::findInstance(session_id);
         if (const auto* session = LLIMModel::instance().findIMSession(session_id))
         {
             for (const LLSD& message : session->mMsgs)

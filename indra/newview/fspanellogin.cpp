@@ -528,6 +528,19 @@ void FSPanelLogin::reshapePanel()
 }
 
 // static
+//static
+void FSPanelLogin::setCredentialFields(const std::string& username, const std::string& password)
+{
+    if (!sInstance)
+        return;
+    sInstance->getChild<LLComboBox>("username_combo")->setLabel(username);
+    sInstance->mUsernameLength = username.length();
+    sInstance->getChild<LLUICtrl>("password_edit")->setValue(password);
+    sInstance->mPasswordLength = password.length();
+    sInstance->mPasswordModified = true;
+    sInstance->updateLoginButtons();
+}
+
 void FSPanelLogin::setFields(LLPointer<LLCredential> credential, bool from_startup /* = false*/)
 {
     if (!sInstance)

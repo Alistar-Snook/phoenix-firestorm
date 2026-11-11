@@ -949,7 +949,7 @@ bool LLLogChat::moveTranscripts(const std::string currentDirectory,
 void LLLogChat::deleteTranscripts()
 {
     deleteTranscriptContent(gDirUtilp->getPerAccountChatLogsDir());
-    LLFloaterIMSessionTab::processChatHistoryStyleUpdate(true);
+    FSFloaterIM::processChatHistoryStyleUpdate(true);
 }
 
 // static

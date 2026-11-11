@@ -33,7 +33,7 @@
 #include "llframetimer.h"
 #include "llfloaterwebmodal.h"
 #include "llmediactrl.h"
-#include "llpanellogin.h"
+#include "fspanellogin.h"
 #include "llui.h"
 #include "llviewercontrol.h"
 
@@ -71,7 +71,7 @@ public:
         }
         else if (action == "join" && params.size() >= 3)
         {
-            LLPanelLogin::setCredentialFields(LLURI::unescape(params[1].asString()),
+            FSPanelLogin::setCredentialFields(LLURI::unescape(params[1].asString()),
                                               LLURI::unescape(params[2].asString()));
             LLFloaterReg::hideInstance("join");
         }

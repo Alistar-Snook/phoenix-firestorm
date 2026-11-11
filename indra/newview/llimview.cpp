@@ -1562,7 +1562,7 @@ void LLIMModel::LLIMSession::replaceHistoricalMessages(const chat_message_list_t
 {
     if (LLChatServiceHistory::replaceHistory(mMsgs, history, isP2P()))
     {
-        if (LLFloaterIMSession* floater = LLFloaterIMSession::findInstance(mSessionID))
+        if (FSFloaterIM* floater = FSFloaterIM::findInstance(mSessionID))
         {
             floater->reloadMessages(false);
         }
@@ -1580,7 +1580,7 @@ void LLIMModel::LLIMSession::clearForHistoryDeletion()
     mParticipantUnreadMessageCount = 0;
     mHasOfflineMessage = false;
 
-    if (LLFloaterIMSession* floater = LLFloaterIMSession::findInstance(mSessionID))
+    if (FSFloaterIM* floater = FSFloaterIM::findInstance(mSessionID))
     {
         floater->reloadMessages(false);
     }
@@ -2291,7 +2291,6 @@ void deliverMessage(const std::string& utf8_text,
 
     // Resolve the session before dispatch so its history boundary predates this send.
     LLIMModel::LLIMSession* session = LLIMModel::getInstance()->findIMSession(im_session_id);
-    LLSD history_context;
 
     if(!sent)
     {
@@ -2304,13 +2303,6 @@ void deliverMessage(const std::string& utf8_text,
         if ( dialog != IM_NOTHING_SPECIAL )
         {
             new_dialog = IM_SESSION_SEND;
-        }
-
-        // Capture once before transport; translation may finish after service publication.
-        if (dialog == IM_NOTHING_SPECIAL && other_participant_id.notNull() &&
-            session && session->isP2P())
-        {
-            history_context = session->mChatServiceHistory.outgoingContext(other_participant_id);
         }
 
         pack_instant_message(
@@ -2367,6 +2359,16 @@ void LLIMModel::sendMessage(const std::string& utf8_text,
     size_t split = MAX_MSG_BUF_SIZE - 1;
     size_t pos = 0;
     size_t total = utf8_text.length();
+
+    // Resolve the session and capture the history boundary once before transport;
+    // translation may finish after service publication.
+    LLIMModel::LLIMSession* session = findIMSession(im_session_id);
+    LLSD history_context;
+    if (dialog == IM_NOTHING_SPECIAL && other_participant_id.notNull() &&
+        session && session->isP2P())
+    {
+        history_context = session->mChatServiceHistory.outgoingContext(other_participant_id);
+    }
 
     while (pos < total)
     {

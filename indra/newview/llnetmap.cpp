@@ -1608,7 +1608,7 @@ bool LLNetMap::createImage(LLPointer<LLImageRaw>& rawimagep) const
     // reshape().
     if (LLApp::isExiting())
     {
-        return;
+        return false;
     }
 
     // Find the size of the side of a square that surrounds the circle that surrounds getRect().

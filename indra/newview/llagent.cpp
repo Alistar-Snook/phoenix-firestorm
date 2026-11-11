@@ -6357,15 +6357,16 @@ void LLAgent::applyExternalActions(const LLGameControl::AgentActions& actions)
     if ((actions.mControlFlags & CONTROLLER_MOVEMENT_FLAGS)
         && actions.mIsRunning != getRunning())
     {
+        // <FS> RLVa-aware temp run; these already send the walk/run message
         if (actions.mIsRunning)
         {
-            setRunning();
+            setTempRun();
         }
         else
         {
-            clearRunning();
+            clearTempRun();
         }
-        sendWalkRun(actions.mIsRunning);
+        // </FS>
     }
 
     mExternalActionFlags = actions.mControlFlags;
@@ -6509,13 +6510,11 @@ void LLAgent::applyExternalActions(const LLGameControl::AgentActions& actions)
         {
             if (getRunning())
             {
-                clearRunning();
-                sendWalkRun(false);
+                clearTempRun();
             }
             else
             {
-                setRunning();
-                sendWalkRun(true);
+                setTempRun();
             }
         }
         mToggleRun = false;

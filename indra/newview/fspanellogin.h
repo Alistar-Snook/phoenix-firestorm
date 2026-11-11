@@ -56,6 +56,7 @@ public:
     static void reshapePanel();
 
     static void setFields(LLPointer<LLCredential> credential, bool from_startup = false);
+    static void setCredentialFields(const std::string& username, const std::string& password); // LL: join flow
 
     static void getFields(LLPointer<LLCredential>& credential, bool& remember);
 
