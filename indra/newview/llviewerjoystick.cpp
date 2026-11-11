@@ -48,6 +48,7 @@
 #include "llfocusmgr.h"
 #include "llmoveview.h"
 #include "llgamecontrol.h"
+#include "llformat.h"
 
 #if LL_WINDOWS && !LL_MESA_HEADLESS
 // Require DirectInput version 8
@@ -154,15 +155,19 @@ BOOL CALLBACK di8_devices_callback(LPCDIDEVICEINSTANCE device_instance_ptr, LPVO
     if (device_instance_ptr)
     {
         std::string product_name = ll_convert<std::string>(std::wstring(device_instance_ptr->tszProductName));
+        // For HID devices DirectInput encodes the USB ids in guidProduct as MAKELONG(VID, PID)
+        U16 vendor_id = LOWORD(device_instance_ptr->guidProduct.Data1);
+        U16 product_id = HIWORD(device_instance_ptr->guidProduct.Data1);
 
         // Only 3Dconnexion devices are handled by ndof: generic game controllers
         // belong to LLGameControl (SDL), and opening them here too would feed the
         // same physical input into the flycam twice.
-        if (!LLViewerJoystick::is3DConnexionDevice(product_name))
+        if (!LLViewerJoystick::is3DConnexionDevice(vendor_id, product_id, product_name))
         {
             LL_DEBUGS("Joystick") << "Skipping non-3Dconnexion device: " << product_name << LL_ENDL;
             return DIENUM_CONTINUE;
         }
+        product_name = LLViewerJoystick::get3DConnexionDeviceName(vendor_id, product_id, product_name);
 
         LLSD guid = LLViewerJoystick::getInstance()->getDeviceUUID();
 
@@ -213,7 +218,7 @@ BOOL CALLBACK di8_devices_callback(LPCDIDEVICEINSTANCE device_instance_ptr, LPVO
                 LLSD::Binary data; //just an std::vector
                 data.resize(size);
                 memcpy(&data[0], &device_instance_ptr->guidInstance /*POD _GUID*/, size);
-                LLViewerJoystick::getInstance()->initDevice(&device, product_name, LLSD(data));
+                LLViewerJoystick::getInstance()->initDevice(&device, product_name, LLSD(data), true);
                 return DIENUM_STOP;
             }
         }
@@ -579,7 +584,7 @@ void LLViewerJoystick::initDevice(LLSD &guid)
 #endif
 }
 
-bool LLViewerJoystick::initDevice(void * preffered_device /*LPDIRECTINPUTDEVICE8*/, const std::string &name, const LLSD &guid)
+bool LLViewerJoystick::initDevice(void * preffered_device /*LPDIRECTINPUTDEVICE8*/, const std::string &name, const LLSD &guid, bool is_3dconnexion)
 {
 #if LIB_NDOF
     mLastDeviceUUID = guid;
@@ -617,13 +622,13 @@ bool LLViewerJoystick::initDevice(void * preffered_device /*LPDIRECTINPUTDEVICE8
     mNdofDev->manufacturer[0] = '\0';
 #endif
 
-    return initDevice(preffered_device);
+    return initDevice(preffered_device, is_3dconnexion);
 #else
     return false;
 #endif
 }
 
-bool LLViewerJoystick::initDevice(void * preffered_device /* LPDIRECTINPUTDEVICE8* */)
+bool LLViewerJoystick::initDevice(void * preffered_device /* LPDIRECTINPUTDEVICE8* */, bool is_3dconnexion)
 {
 #if LIB_NDOF
     if (!mNdofDev)
@@ -658,13 +663,13 @@ bool LLViewerJoystick::initDevice(void * preffered_device /* LPDIRECTINPUTDEVICE
     }
     else
     {
-        return acceptInitializedDevice();
+        return acceptInitializedDevice(is_3dconnexion);
     }
 #endif
     return false;
 }
 
-bool LLViewerJoystick::acceptInitializedDevice()
+bool LLViewerJoystick::acceptInitializedDevice(bool is_3dconnexion)
 {
 #if LIB_NDOF
     // ndof_init_first() will open any joystick-like device (e.g. an Xbox
@@ -672,7 +677,7 @@ bool LLViewerJoystick::acceptInitializedDevice()
     // devices: everything else is handled by LLGameControl (SDL).  Accepting a
     // generic controller here would have both paths drive the flycam from the
     // same physical input.
-    mDeviceIs3DConnexion = is3DConnexionDevice(mNdofDev->product);
+    mDeviceIs3DConnexion = is_3dconnexion || is3DConnexionDevice(mNdofDev->product);
     if (mDeviceIs3DConnexion)
     {
         mDriverState = JDS_INITIALIZED;
@@ -1671,6 +1676,33 @@ bool LLViewerJoystick::is3DConnexionDevice(const std::string& full_name)
     return answer;
 }
 
+// static
+bool LLViewerJoystick::is3DConnexionDevice(U16 vendor_id, U16 product_id, const std::string& device_name)
+{
+    constexpr U16 VID_3DCONNEXION = 0x256f;
+    // Older 3Dconnexion devices (e.g. SpaceNavigator) use Logitech's vendor id
+    // with product ids in the 0xc6xx range
+    constexpr U16 VID_LOGITECH = 0x046d;
+    if (vendor_id == VID_3DCONNEXION
+        || (vendor_id == VID_LOGITECH && (product_id & 0xff00) == 0xc600))
+    {
+        return true;
+    }
+    return is3DConnexionDevice(device_name);
+}
+
+// static
+std::string LLViewerJoystick::get3DConnexionDeviceName(U16 vendor_id, U16 product_id, const std::string& device_name)
+{
+    if (is3DConnexionDevice(device_name) || !is3DConnexionDevice(vendor_id, product_id, device_name))
+    {
+        return device_name;
+    }
+    // Recognized by USB ids only: the OS gave it a generic name
+    // (e.g. "6 axis 2 button device" for the SpaceMouse Wireless BT on Windows)
+    return llformat("3Dconnexion device %04X:%04X", vendor_id, product_id);
+}
+
 LLSD LLViewerJoystick::getSessionStatsAsLLSD() const
 {
     std::string current_device;
@@ -1698,10 +1730,11 @@ LLSD LLViewerJoystick::getSessionStatsAsLLSD() const
 bool LLViewerJoystick::isLikeSpaceNavigator() const
 {
 #if LIB_NDOF
-    // <FS:Zi> FIRE-30846 - combined product strings returned by some devices are handled by is3DConnexionDevice()
+    // Use the flag set when the device was accepted rather than checking
+    // mNdofDev->product again: the product name may be generic.
     return (mNdofDev != NULL
             && isJoystickInitialized()
-            && is3DConnexionDevice(mNdofDev->product));
+            && mDeviceIs3DConnexion);
 #else
     return false;
 #endif
