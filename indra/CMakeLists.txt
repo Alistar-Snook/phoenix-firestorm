@@ -143,6 +143,11 @@ endif (USE_AVX_OPTIMIZATION)
 
 add_subdirectory(cmake)
 
+# Velopack must be included before llfilesystem since filesystem
+# needs LL_VELOPACK compile definition for its portable-install detection.
+if (USE_VELOPACK)
+  include(Velopack)
+endif()
 # <FS:PP> LTO indicator
 if (USE_LTO)
   message(STATUS "Compiling with Link Time Optimization")

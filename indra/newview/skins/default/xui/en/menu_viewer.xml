@@ -453,7 +453,7 @@
 			 name="AvatarFaceNearest">
 				<menu_item_call.on_click
 				 function="Avatar.FaceNearest" />
-			</menu_item_call>
+        </menu_item_call>
 			<menu_item_check
 			 label="Avatar alignment"
 			 layout="topleft"
@@ -1384,7 +1384,7 @@
                  function="World.EnvSettings"
                  parameter="sunrise" />
                 <menu_item_check.on_check
-                 function="World.EnableEnvSettings" 
+                 function="World.EnableEnvSettings"
                  parameter="sunrise" />
                 <menu_item_check.on_enable
                  function="RLV.EnableIfNot"
@@ -1425,7 +1425,7 @@
                  function="World.EnvSettings"
                  parameter="sunset" />
                 <menu_item_check.on_check
-                 function="World.EnableEnvSettings" 
+                 function="World.EnableEnvSettings"
                  parameter="sunset" />
                 <menu_item_check.on_enable
                  function="RLV.EnableIfNot"
@@ -1439,7 +1439,7 @@
                  function="World.EnvSettings"
                  parameter="midnight" />
                 <menu_item_check.on_check
-                 function="World.EnableEnvSettings" 
+                 function="World.EnableEnvSettings"
                  parameter="midnight" />
                 <menu_item_check.on_enable
                  function="RLV.EnableIfNot"
@@ -1453,7 +1453,7 @@
                  function="World.EnvSettings"
                  parameter="region" />
                 <menu_item_check.on_check
-                 function="World.EnableEnvSettings" 
+                 function="World.EnableEnvSettings"
                  parameter="region" />
                 <menu_item_check.on_enable
                  function="RLV.EnableIfNot"
@@ -1536,7 +1536,7 @@
                 </menu_item_call>
             </menu>
         </menu>
-	    
+
 <!--   
 	    <menu
 	     create_jump_keys="true"
@@ -2528,20 +2528,27 @@
             <menu_item_call.on_enable
              function="File.EnableUploadMaterial" />
           </menu_item_call>
-	   <menu_item_call
-             label="Bulk..."
-             layout="topleft"
-             name="Bulk Upload">
-                <menu_item_call.on_visible
-                 function="Upload.CalculateCosts"
-                 parameter="Bulk Upload,texture" />
-                <menu_item_call.on_click
-                 function="File.UploadBulk"
-                 parameter="" />
-		<menu_item_call.on_visible
-                 function="Upload.CalculateCosts"
-                 parameter="Bulk Upload" />
-            </menu_item_call>
+          <menu_item_separator
+           layout="topleft" />
+          <menu_item_call
+           label="Multiple files..."
+           layout="topleft"
+           name="Bulk Upload Files">
+            <menu_item_call.on_visible
+             function="Upload.CalculateCosts"
+             parameter="Bulk Upload,texture" />
+            <menu_item_call.on_click
+             function="File.UploadBulk"
+             parameter="" />
+          </menu_item_call>
+          <menu_item_call
+           label="Folder..."
+           layout="topleft"
+           name="Bulk Upload Folder">
+            <menu_item_call.on_click
+             function="File.UploadBulkFolder"
+             parameter="" />
+          </menu_item_call>
 	    <menu_item_call
              label="Import Linkset..."
              visibility_control="FSEnableObjectExports"
@@ -3217,7 +3224,7 @@
                 <menu_item_call.on_click
                  function="Floater.Show"
                  parameter="lagmeter" />
-            </menu_item_call>
+        </menu_item_call>
             <menu_item_check
              label="Statistics Bar"
              name="Statistics Bar"
@@ -3323,7 +3330,7 @@
                  function="View.ShowHoverTips" />
             </menu_item_check>
 
-            <menu_item_separator/>
+        <menu_item_separator/>
 
             <menu_item_check
              label="Show Land Tooltips"
@@ -3399,7 +3406,7 @@
           </menu_item_check>
           <menu_item_check
              label="Glow"
-             name="Rendering Type Glow">
+             name="Rendering Type Fullbright">
             <menu_item_check.on_check
              function="Advanced.CheckRenderType"
              parameter="glow" />
@@ -3660,7 +3667,7 @@
                  function="Advanced.ToggleFeature"
                  parameter="flexible" />
             </menu_item_check>
-        </menu>        
+        </menu>
         <menu
          label="RLVa"
          name="RLVa Embedded"
@@ -3963,7 +3970,7 @@
                 <menu_item_check.on_click
                  function="Advanced.ToggleConsole"
                  parameter="texture" />
-            </menu_item_check>            
+            </menu_item_check>
             <menu_item_check
              label="Debug Console"
              name="Debug Console"
@@ -4262,7 +4269,7 @@
             </menu_item_call>
             <menu_item_call
              label="Force LLError And Crash"
-             name="Force LLError And Crash">
+             name="Force LLError Message And Crash">
                 <menu_item_call.on_click
                  function="Advanced.ForceErrorLlerror" />
             </menu_item_call>
@@ -5111,7 +5118,7 @@
          name="Dump Scripted Camera">
             <menu_item_call.on_click
              function="Advanced.DumpScriptedCamera" />
-        </menu_item_call>      
+        </menu_item_call>
         <menu
          create_jump_keys="true"
          label="Recorder"
@@ -5904,13 +5911,6 @@
          function="Advanced.PrimfeedAuthReset" />
       </menu_item_call>
 
-      <menu_item_call
-         label="Enable Visual Leak Detector"
-         name="Enable Visual Leak Detector">
-        <menu_item_call.on_click
-           function="Advanced.ToggleVisualLeakDetector" />
-        </menu_item_call>
-      
         <menu_item_check
          label="Output Debug Minidump"
          name="Output Debug Minidump">

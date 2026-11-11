@@ -226,7 +226,7 @@ public:
     static bool getUsingPacificTime() { return sUsingPacificTime; }
     // </FS:TJ>
 
-    static std::string getDatetimeCode (std::string key);
+    static std::string getDatetimeCode (const std::string& key);
 
     static void splitString(const std::string& text, char delimiter,
         std::function<void(const std::string&)> handler);

@@ -1416,6 +1416,13 @@ extern char const* const _PREHASH_ActionMode;
 extern char const* const _PREHASH_Axes;
 extern char const* const _PREHASH_ModeAxes;
 extern char const* const _PREHASH_ModeButtons;
+extern char const* const _PREHASH_CombatSettings;
+extern char const* const _PREHASH_CombatFlags;
+extern char const* const _PREHASH_OnDeath;
+extern char const* const _PREHASH_DamageThrottle;
+extern char const* const _PREHASH_RegenerationRate;
+extern char const* const _PREHASH_InvulnerabilyTime;
+extern char const* const _PREHASH_DamageLimit;
 
 // <FS:CR> Aurora Sim
 extern char const* const _PREHASH_RegionSizeX;

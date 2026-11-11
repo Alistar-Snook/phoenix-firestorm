@@ -51,6 +51,17 @@ public:
     void callFunctions();                                                       // calls all functions
     void deleteAllFunctions();
 
+    // Wall-clock time (LLTimer::getTotalSeconds() units) at which this pass
+    // of callFunctions() began.
+    F64 getStartTime() const
+    {
+        llassert(mInCallFunctions);
+        return mCallStartTime;
+    }
+
+    // True while executing inside callFunctions()
+    bool isInCallFunctions() const { return mInCallFunctions; }
+
     static void test();
 
 protected:
@@ -62,6 +73,8 @@ protected:
     S32 mCallbackDepth = 0;
     bool mHasPendingDeletions = false;
     // </FS:TJ>
+    F64 mCallStartTime = 0.0;
+    bool mInCallFunctions = false;
 };
 
 typedef std::function<void ()> nullary_func_t;

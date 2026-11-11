@@ -119,6 +119,8 @@ private:
     LLFloaterRegionInfo(const LLSD& seed);
     ~LLFloaterRegionInfo();
 
+    static void processCombatSettings(LLMessageSystem* msg, U64 region_flags);
+
 protected:
     void onTabSelected(const LLSD& param);
     void disableTabCtrls();
@@ -223,6 +225,7 @@ public:
 
     void onBtnSet();
     void setObjBonusFactor(F32 object_bonus_factor) {mObjBonusFactor = object_bonus_factor;}
+    void setCombatEnabled(bool enabled);
 
 protected:
     bool sendUpdate() override;
@@ -233,9 +236,9 @@ protected:
     static void onClickMessage(void* userdata);
     bool onMessageCommit(const LLSD& notification, const LLSD& response);
     bool onChangeObjectBonus(const LLSD& notification, const LLSD& response);
+    void onClickCombatSettings();
 
     F32 mObjBonusFactor;
-
 };
 
 /////////////////////////////////////////////////////////////////////////////

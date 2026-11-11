@@ -55,6 +55,12 @@ private:
     boost::signals2::connection mAvatarNameCallbackConnection;
 // </FS:PP>
 
+private:
+    void onResultsRightClick(LLUICtrl* ctrl, S32 x, S32 y);
+    void onViewProfile();
+
+    LLHandle<LLContextMenu> mPopupMenuHandle;
+    LLUUID mSelectedAvatarID;
 };
 
 #endif

@@ -4,7 +4,7 @@
  *
  * $LicenseInfo:firstyear=2002&license=viewerlgpl$
  * Second Life Viewer Source Code
- * Copyright (C) 2010, Linden Research, Inc.
+ * Copyright (C) 2026, Linden Research, Inc.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -68,6 +68,7 @@ const char
 
 static const char* const empty = "";
 std::string LLDir::sDumpDir = "";
+LLUUID LLDir::sDumpDirSessionID;
 
 LLDir::LLDir()
 :   mAppName(""),
@@ -357,16 +358,24 @@ const std::string &LLDir::getDumpDir() const
 {
     if (sDumpDir.empty() )
     {
-        LLUUID uid;
-        uid.generate();
 
         sDumpDir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "")
-                    + "dump-" + uid.asString();
+                    + "dump-" + getDumpDirSessionUUID().asString();
 
         dir_exists_or_crash(sDumpDir);
     }
 
     return LLDir::sDumpDir;
+}
+
+const LLUUID& LLDir::getDumpDirSessionUUID() const
+{
+    if (sDumpDirSessionID.isNull())
+    {
+        sDumpDirSessionID.generate();
+    }
+
+    return sDumpDirSessionID;
 }
 
 bool LLDir::dumpDirExists() const
@@ -1350,6 +1359,24 @@ void LLDir::openDir(const std::string& filepath)
         LL_INFOS() << "Opened file browser for: " << filepath << LL_ENDL;
     }
 }
+#if LL_VELOPACK
+const char* const LLDir::PORTABLE_USER_DATA_DIRNAME = "UserData";
+
+// static
+bool LLDir::isPortableInstall(const std::string& install_root)
+{
+    // Todo: portable mac builds don't have a .portable marker file.
+    // Fix mac portable builds to include one.
+    if (install_root.empty())
+    {
+        return false;
+    }
+    fsyspath marker(install_root);
+    marker /= ".portable";
+    std::error_code ec;
+    return std::filesystem::is_regular_file(marker, ec);
+}
+#endif // LL_VELOPACK
 
 void dir_exists_or_crash(const std::string &dir_name)
 {

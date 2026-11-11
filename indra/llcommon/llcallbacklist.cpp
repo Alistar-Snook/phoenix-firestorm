@@ -134,6 +134,9 @@ void LLCallbackList::deleteAllFunctions()
 void LLCallbackList::callFunctions()
 {
     ++mCallbackDepth; // <FS:TJ/> [FIRE-36314] Fix crash caused by possible callback erasure during callFunctions()
+    mCallStartTime = LLTimer::getTotalSeconds();
+    mInCallFunctions = true;
+
     for (callback_list_t::iterator iter = mCallbackList.begin(); iter != mCallbackList.end(); )
     {
         callback_list_t::iterator curiter = iter++;
@@ -155,6 +158,7 @@ void LLCallbackList::callFunctions()
         mCallbackList.remove_if([](const auto& entry) { return !entry.first; });
     }
     // </FS:TJ>
+    mInCallFunctions = false;
 }
 
 // Shim class to allow arbitrary boost::bind

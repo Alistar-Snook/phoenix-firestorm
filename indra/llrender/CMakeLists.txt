@@ -124,3 +124,7 @@ if (LL_TESTS AND LINUX AND USE_SDL_WINDOW)
   LL_ADD_INTEGRATION_TEST(llvertexbuffer_pool "" "llrender")
 endif ()
 # </FS:Beq>
+if (LL_TESTS)
+  include(LLAddBuildTest)
+  LL_ADD_INTEGRATION_TEST(llgltexture "" "llrender")
+endif ()

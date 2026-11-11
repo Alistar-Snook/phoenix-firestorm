@@ -6,6 +6,14 @@
 	<string>English</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>CFBundleExecutable</key>
+	<string>SLPlugin</string>
+	<key>CFBundleName</key>
+	<string>SLPlugin</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>LSUIElement</key>
 	<!-- <FS:TJ> [FIRE-36985] Fix multiple Firestorm dock icons in macOS 27.2+
 	<string>1</string> !-->

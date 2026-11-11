@@ -56,7 +56,6 @@ LLFloaterDestinations::~LLFloaterDestinations()
 
 bool LLFloaterDestinations::postBuild()
 {
-    enableResizeCtrls(true, true, false);
     LLMediaCtrl* destinations = getChild<LLMediaCtrl>("destination_guide_contents");
     destinations->setErrorPageURL(gSavedSettings.getString("GenericErrorPageURL"));
     // <FS:AW> optional opensim support

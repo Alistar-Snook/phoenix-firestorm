@@ -399,6 +399,7 @@ void LLKeywords::processTokensGroup(const LLSD& tokens, std::string_view group)
                         {
                             tooltip += ", Sleep: " + getAttribute("sleep");
                         }
+                        break;
                     default:
                         break;
                 }

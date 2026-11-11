@@ -1602,6 +1602,15 @@ void LLNetMap::renderPropertyLinesForRegion(const LLViewerRegion* pRegion, const
 bool LLNetMap::createImage(LLPointer<LLImageRaw>& rawimagep) const
 // [/SL:KB]
 {
+    // Don't recreate GL resources while the application is shutting down.
+    // LLFloaterView::restoreAll() un-minimizes floaters during
+    // LLAppViewer::disconnectViewer(), which can drive this code path via
+    // reshape().
+    if (LLApp::isExiting())
+    {
+        return;
+    }
+
     // Find the size of the side of a square that surrounds the circle that surrounds getRect().
     // ... which is, the diagonal of the rect.
     F32 width = (F32)getRect().getWidth();
