@@ -146,7 +146,9 @@ namespace
     // so the icons read clearly.
     const LLFontGL* promptFontForCell()
     {
-        return LLFontGL::getFont(LLFontDescriptor("SecondLife-game-control", "Huge", 0));
+        const LLFontGL* font = LLFontGL::getFont(LLFontDescriptor("SecondLife-game-control", "Huge", 0));
+        // Fall back to the default font if the glyph font is missing, so the panel still opens.
+        return font ? font : LLFontGL::getFontSansSerif();
     }
 }
 
