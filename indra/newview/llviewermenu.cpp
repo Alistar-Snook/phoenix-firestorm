@@ -8663,6 +8663,28 @@ class LLAvatarResetSkeletonAndAnimations : public view_listener_t
     }
 };
 
+class LLAvatarReload : public view_listener_t
+{
+    bool handleEvent(const LLSD& userdata)
+    {
+        LLVOAvatar* avatar = find_avatar_from_object(LLSelectMgr::getInstance()->getSelection()->getPrimaryObject());
+        if (avatar && !avatar->isSelf())
+        {
+            avatar->reloadAvatar();
+        }
+        return true;
+    }
+};
+
+class LLAvatarEnableReload : public view_listener_t
+{
+    bool handleEvent(const LLSD& userdata)
+    {
+        LLVOAvatar* avatar = find_avatar_from_object(LLSelectMgr::getInstance()->getSelection()->getPrimaryObject());
+        return avatar && !avatar->isSelf() && !avatar->isControlAvatar();
+    }
+};
+
 class LLAvatarResetSelfSkeleton : public view_listener_t
 {
     bool handleEvent(const LLSD& userdata)
@@ -13556,6 +13578,8 @@ void initialize_menus()
     view_listener_t::addMenu(new LLAvatarResetSkeleton(), "Avatar.ResetSkeleton");
     view_listener_t::addMenu(new LLAvatarEnableResetSkeleton(), "Avatar.EnableResetSkeleton");
     view_listener_t::addMenu(new LLAvatarResetSkeletonAndAnimations(), "Avatar.ResetSkeletonAndAnimations");
+    view_listener_t::addMenu(new LLAvatarReload(), "Avatar.Reload");
+    view_listener_t::addMenu(new LLAvatarEnableReload(), "Avatar.EnableReload");
     view_listener_t::addMenu(new LLAvatarResetSelfSkeleton(), "Avatar.ResetSelfSkeleton");
     view_listener_t::addMenu(new LLAvatarResetSelfSkeletonAndAnimations(), "Avatar.ResetSelfSkeletonAndAnimations");
 
