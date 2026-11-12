@@ -989,12 +989,26 @@ Messages History::compose(const Messages& preview, const Messages& live, U32 lim
     return result;
 }
 
+namespace
+{
+    // <FS> FS stores a chat style (EChatStyle) in "is_history", so a plain boolean test
+    // would also match live /me, moderator and teleport-separator rows. Historical rows
+    // are CHAT_STYLE_HISTORY (2) or CHAT_STYLE_SERVER_HISTORY (5).
+    constexpr S32 FS_STYLE_HISTORY = 2;
+    constexpr S32 FS_STYLE_SERVER_HISTORY = 5;
+    bool isHistoricalRow(const LLSD& message)
+    {
+        const S32 style = message["is_history"].asInteger();
+        return style == FS_STYLE_HISTORY || style == FS_STYLE_SERVER_HISTORY;
+    }
+}
+
 bool replaceHistory(Messages& current, const Messages& history, bool direct)
 {
     Messages live;
     for (const LLSD& message : current)
     {
-        if (!message["is_history"].asBoolean())
+        if (!isHistoricalRow(message))
         {
             live.push_back(message);
         }
@@ -1004,7 +1018,7 @@ bool replaceHistory(Messages& current, const Messages& history, bool direct)
     {
         LLSD message = source;
         message["timestamp"] = source["timestamp"].asInteger();
-        message["is_history"] = true;
+        message["is_history"] = FS_STYLE_HISTORY;
         message["is_region_msg"] = false;
         historical.push_front(message);
     }
@@ -1022,8 +1036,8 @@ bool replaceHistory(Messages& current, const Messages& history, bool direct)
     if (current.size() == live.size() &&
         std::equal(current.begin(), current.end(), live.begin(), [](const LLSD& left, const LLSD& right)
         {
-            const bool historical = left["is_history"].asBoolean();
-            if (historical != right["is_history"].asBoolean()) return false;
+            const bool historical = isHistoricalRow(left);
+            if (historical != isHistoricalRow(right)) return false;
             if (!historical) return true;
             LLSD left_history = left;
             LLSD right_history = right;

@@ -28,6 +28,7 @@
 #include "llfloaterconversationpreview.h"
 #include "llfloaterreg.h"
 #include "fsfloaterim.h"
+#include "llchat.h"
 #include "llimview.h"
 #include "lllogchat.h"
 #include "llmutelist.h"
@@ -2188,7 +2189,7 @@ LLSD serviceMessage(const Row& row)
     message[LL_IM_FROM_ID] = row.from_id;
     message[LL_IM_TEXT] = row.message;
     message["timestamp"] = static_cast<S32>(timestamp);
-    message["is_history"] = true;
+    message["is_history"] = static_cast<S32>(CHAT_STYLE_HISTORY);
     message["chat_service_msg_id"] = row.msg_id;
     return message;
 }
@@ -2556,7 +2557,8 @@ static LLChatServiceHistory::Messages composeHistory(
         {
             for (const LLSD& message : session->mMsgs)
             {
-                if (!message["is_history"].asBoolean())
+                if (message["is_history"].asInteger() != CHAT_STYLE_HISTORY &&
+                    message["is_history"].asInteger() != CHAT_STYLE_SERVER_HISTORY)
                 {
                     live.push_back(message);
                 }
