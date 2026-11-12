@@ -563,13 +563,26 @@ void LLPanelPreferenceGameControl::applyGameControlInput()
     std::string value = channel.getRemoteName();
     if (!sSelectedCombobox->setSelectedByValue(value, true))
     {
-        // The action-mapping axis selector has no entries for the individual
-        // trigger axes: it collapses them into one virtual "Triggers" item
-        // (see AXIS_TRIGGERS in panel_preferences_game_control.xml).
-        if (value != "AXIS_LEFT_TRIGGER" && value != "AXIS_RIGHT_TRIGGER")
-            return;
-        if (!sSelectedCombobox->setSelectedByValue(std::string("AXIS_TRIGGERS"), true))
-            return;
+        if (channel.isButton())
+        {
+            // getRemoteName() does not match the selector values for Misc1
+            // ("BUTTON_MISC1" vs the selector's "BUTTON_15") nor for the unnamed
+            // spare buttons 21..31 (it returns a blank), so fall back to the
+            // indexed "BUTTON_N" form used by the selector items.
+            value = llformat("BUTTON_%d", (S32)channel.mIndex);
+            if (!sSelectedCombobox->setSelectedByValue(value, true))
+                return;
+        }
+        else
+        {
+            // The action-mapping axis selector has no entries for the individual
+            // trigger axes: it collapses them into one virtual "Triggers" item
+            // (see AXIS_TRIGGERS in panel_preferences_game_control.xml).
+            if (value != "AXIS_LEFT_TRIGGER" && value != "AXIS_RIGHT_TRIGGER")
+                return;
+            if (!sSelectedCombobox->setSelectedByValue(std::string("AXIS_TRIGGERS"), true))
+                return;
+        }
     }
 
     sGameControlPanel->onCommitInputChannel(sSelectedCombobox);
