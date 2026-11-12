@@ -648,8 +648,9 @@ void LLPanelPreferenceGameControl::onAxisStateSelect()
 
         S32 offset_col    = axisStateColumn("offset");
         S32 dead_zone_col = axisStateColumn("dead_zone");
+        S32 curve_col     = axisStateColumn("curve");
         S32 column_index = row->getSelectedCell();
-        if (column_index == offset_col || column_index == dead_zone_col)
+        if (column_index == offset_col || column_index == dead_zone_col || column_index == curve_col)
         {
             fitInRect(mNumericValueEditor, mAxisState, row_index, column_index);
             if (column_index == dead_zone_col)  // Dead Zone
@@ -657,6 +658,12 @@ void LLPanelPreferenceGameControl::onAxisStateSelect()
                 mNumericValueEditor->setMinValue(0);
                 mNumericValueEditor->setMaxValue(LLGameControl::MAX_AXIS_DEAD_ZONE);
                 mNumericValueEditor->setValue(deviceOptions.getAxisOptions()[row_index].mDeadZone);
+            }
+            else if (column_index == curve_col)  // Response curve (percent, 100 = linear)
+            {
+                mNumericValueEditor->setMinValue(LLGameControl::MIN_AXIS_CURVE);
+                mNumericValueEditor->setMaxValue(LLGameControl::MAX_AXIS_CURVE);
+                mNumericValueEditor->setValue(deviceOptions.getAxisOptions()[row_index].mCurve);
             }
             else  // Offset
             {
@@ -702,15 +709,21 @@ void LLPanelPreferenceGameControl::onCommitNumericValue()
         S32 row_index = mAxisState->getItemIndex(row);
         S32 offset_col    = axisStateColumn("offset");
         S32 dead_zone_col = axisStateColumn("dead_zone");
+        S32 curve_col     = axisStateColumn("curve");
         S32 column_index = row->getSelectedCell();
-        llassert(column_index == offset_col || column_index == dead_zone_col);
-        if (column_index != offset_col && column_index != dead_zone_col)
+        llassert(column_index == offset_col || column_index == dead_zone_col || column_index == curve_col);
+        if (column_index != offset_col && column_index != dead_zone_col && column_index != curve_col)
             return;
 
         if (column_index == dead_zone_col)  // Dead Zone
         {
             value = std::clamp<S32>(value, 0, LLGameControl::MAX_AXIS_DEAD_ZONE);
             deviceOptions.getAxisOptions()[row_index].mDeadZone = (U16)value;
+        }
+        else if (column_index == curve_col)  // Response curve (percent, 100 = linear)
+        {
+            value = std::clamp<S32>(value, LLGameControl::MIN_AXIS_CURVE, LLGameControl::MAX_AXIS_CURVE);
+            deviceOptions.getAxisOptions()[row_index].mCurve = (U16)value;
         }
         else  // Offset
         {
@@ -1585,6 +1598,7 @@ void LLPanelPreferenceGameControl::populateAxisStateRows()
     row_params.columns(axisStateColumn("invert")).font_halign = "right"; // right-align the checkbox within the cell
     row_params.columns(axisStateColumn("offset")).font_halign = "right";
     row_params.columns(axisStateColumn("dead_zone")).font_halign = "right";
+    row_params.columns(axisStateColumn("curve")).font_halign = "right";
     row_params.columns(axisStateColumn("fixed_value")).font_halign = "right";
 
     S32 input_glyph_col = axisStateColumn("input_glyph");
@@ -1619,12 +1633,14 @@ void LLPanelPreferenceGameControl::populateAxisStateOptionCells()
     S32 invert_col    = axisStateColumn("invert");
     S32 offset_col    = axisStateColumn("offset");
     S32 dead_zone_col = axisStateColumn("dead_zone");
+    S32 curve_col     = axisStateColumn("curve");
     for (size_t i = 0; i < rows.size() && i < all_axis_options.size(); ++i)
     {
         const LLGameControl::Options::AxisOptions& axis_options = all_axis_options[i];
         rows[i]->getColumn(invert_col)->setValue(axis_options.mMultiplier == -1);  // Invert checkbox
         setNumericLabel(rows[i]->getColumn(offset_col), axis_options.mOffset);      // Offset
         setNumericLabel(rows[i]->getColumn(dead_zone_col), axis_options.mDeadZone); // Dead Zone
+        setNumericLabel(rows[i]->getColumn(curve_col), axis_options.mCurve);        // Response curve (%)
     }
 }
 
