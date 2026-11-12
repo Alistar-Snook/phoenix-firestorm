@@ -1,0 +1,165 @@
+name: Build fork (open)
+
+# Build semplificata per il fork: solo Windows e Linux, senza FMOD, KDU,
+# rclone, segreti, firma del codice e macOS.
+#
+# Uso:
+#  - Manuale: Actions > "Build fork (open)" > Run workflow, scegliendo il branch.
+#    Se compili il campo release_tag viene creata anche una Release.
+#  - Automatico: push di un tag che inizia con "v" (es. v1.0-audio).
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Tag della Release da creare (es. v1.0-audio). Vuoto = solo build, nessuna Release'
+        required: false
+        default: ''
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write   # serve a creare la Release
+
+env:
+  VIEWER_CHANNEL: Alistar
+  AUTOBUILD_VARIABLES_FILE: ${{ github.workspace }}/build-variables/variables
+  XZ_DEFAULTS: -T0
+  addrsize: 64
+
+jobs:
+  build:
+    name: Build / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 345
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, ubuntu-22.04]
+
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v7
+
+      - name: Checkout build variables
+        uses: actions/checkout@v7
+        with:
+          repository: FirestormViewer/fs-build-variables
+          path: build-variables
+
+      - name: Set up Python
+        id: py
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Set PYTHON for CMake
+        shell: bash
+        run: echo "PYTHON=${{ steps.py.outputs.python-path }}" >> "$GITHUB_ENV"
+
+      - name: Install python requirements
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      # ---------- Linux ----------
+      - name: Free disk space (Linux)
+        if: runner.os == 'Linux'
+        uses: jlumbroso/free-disk-space@main
+        with:
+          swap-storage: false
+
+      - name: Install GCC 14 and dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+          sudo apt-get -o Acquire::Retries=3 update
+          sudo apt-get -o Acquire::Retries=3 install -y gcc-14 g++-14 \
+            python3-setuptools pkg-config ninja-build mesa-common-dev \
+            libgl1-mesa-dev libglu1-mesa-dev libosmesa6-dev \
+            libxinerama-dev libxrandr-dev libxcursor-dev libxfixes-dev libxft-dev \
+            libpulse-dev libunwind-dev libpipewire-0.3-dev libdbus-1-dev \
+            libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
+            libvlc-dev libwayland-dev libfreetype6-dev libfontconfig1-dev
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 140 \
+            --slave /usr/bin/g++ g++ /usr/bin/g++-14
+          echo "CC=gcc-14" >> "$GITHUB_ENV"
+          echo "CXX=g++-14" >> "$GITHUB_ENV"
+
+      # ---------- Windows ----------
+      - name: Windows build settings
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          echo "AUTOBUILD_VSVER=170" >> "$GITHUB_ENV"
+          # L'installer di Firestorm usa NSIS: lo installo solo se manca
+          if ! command -v makensis >/dev/null 2>&1 && [ ! -e "/c/Program Files (x86)/NSIS/makensis.exe" ]; then
+            choco install nsis -y --no-progress
+          fi
+          echo "C:\\Program Files (x86)\\NSIS" >> "$GITHUB_PATH"
+
+      # ---------- Build (uguale su entrambi i sistemi) ----------
+      - name: Configure (variante open, senza FMOD e KDU)
+        shell: bash
+        run: |
+          autobuild configure -c ReleaseFS_open -A${addrsize} -- \
+            --package --chan "${VIEWER_CHANNEL}" \
+            -DUSE_FMODSTUDIO=OFF -DUSE_KDU=OFF \
+            -DOPENSIM:BOOL=OFF -DHAVOK_TPV:BOOL=OFF \
+            -DLL_TESTS:BOOL=OFF
+
+      - name: Build and package
+        shell: bash
+        run: autobuild build -c ReleaseFS_open -A${addrsize} --no-configure
+
+      - name: List results
+        if: always()
+        shell: bash
+        run: ls -la build-*/newview/Release/ build-linux-*/newview/ 2>/dev/null || true
+
+      - name: Upload installer (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v7
+        with:
+          name: viewer-windows
+          if-no-files-found: error
+          path: build-*/newview/Release/*Setup.exe
+
+      - name: Upload package (Linux)
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v7
+        with:
+          name: viewer-linux
+          if-no-files-found: error
+          path: build-linux-*/newview/*.xz
+
+  release:
+    name: Create Release
+    needs: build
+    if: ${{ github.event_name == 'push' || inputs.release_tag != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build results
+        uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: List files to publish
+        run: ls -la dist
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event_name == 'push' && github.ref_name || inputs.release_tag }}
+          name: ${{ github.event_name == 'push' && github.ref_name || inputs.release_tag }}
+          target_commitish: ${{ github.sha }}
+          prerelease: true
+          fail_on_unmatched_files: true
+          files: dist/*
+          body: |
+            Build personale non ufficiale (variante open, senza FMOD e KDU).
+            Channel: ${{ env.VIEWER_CHANNEL }}
+            Commit: ${{ github.sha }}
+            Log della build: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
