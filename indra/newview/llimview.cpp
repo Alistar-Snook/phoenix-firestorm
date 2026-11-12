@@ -2362,7 +2362,7 @@ void LLIMModel::sendMessage(const std::string& utf8_text,
 
     // Resolve the session and capture the history boundary once before transport;
     // translation may finish after service publication.
-    LLIMModel::LLIMSession* session = findIMSession(im_session_id);
+    LLIMModel::LLIMSession* session = LLIMModel::getInstance()->findIMSession(im_session_id);
     LLSD history_context;
     if (dialog == IM_NOTHING_SPECIAL && other_participant_id.notNull() &&
         session && session->isP2P())

@@ -35,6 +35,7 @@
 #include "llscreenchannel.h"
 #include "llscriptfloater.h"
 #include "llviewermessage.h"
+#include "llviewercontrol.h"
 #include "llviewernetwork.h"
 
 #include <algorithm>
