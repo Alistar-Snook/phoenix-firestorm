@@ -169,6 +169,10 @@
 #include "lltoolpie.h"
 #include "lltoolselectland.h"
 #include "lltrans.h"
+#include "llrender2dutils.h" // <FS> gl_line_2d for Racing Marker
+#include <deque>
+#include <map>
+#include <set>
 #include "lluictrlfactory.h"
 #include "llversioninfo.h"
 #include "llvieweraudio.h"
@@ -3135,6 +3139,148 @@ void LLViewerWindow::drawDebugText()
     gUIProgram.unbind();
 }
 
+// <FS> Racing Marker: third-person target labels and trails for racing.
+namespace
+{
+    struct RacingTrailPoint
+    {
+        F64 mTime;
+        LLVector3d mPos;
+    };
+    typedef std::deque<RacingTrailPoint> racing_trail_t;
+    std::map<LLUUID, racing_trail_t> sRacingTrails;
+
+    void draw_racing_marker()
+    {
+        static LLCachedControl<bool> enabled(gSavedSettings, "FSRacingMarker", false);
+        static LLCachedControl<F32> range(gSavedSettings, "FSRacingMarkerRange", 300.f);
+        static LLCachedControl<bool> show_labels(gSavedSettings, "FSRacingMarkerLabels", true);
+        static LLCachedControl<bool> show_trail(gSavedSettings, "FSRacingMarkerTrail", true);
+        static LLCachedControl<F32> trail_seconds(gSavedSettings, "FSRacingMarkerTrailSeconds", 5.f);
+
+        if (!enabled || gAgentCamera.cameraMouselook())
+        {
+            if (!sRacingTrails.empty())
+            {
+                sRacingTrails.clear();
+            }
+            return;
+        }
+
+        const F64 now = LLTimer::getElapsedSeconds();
+        const LLVector3d my_pos = gAgent.getPositionGlobal();
+        const LLVector3 my_at = gAgent.getAtAxis();
+        const bool hide_names = gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES);
+        static const std::string unknown_agent = LLTrans::getString("Mouselook_Unknown_Avatar");
+        static LLUIColor map_avatar_color = LLUIColorTable::instance().getColor("MapAvatarColor", LLColor4::white);
+        const LLViewerCamera& camera = LLViewerCamera::instance();
+        const LLVector2& scale = LLUI::getScaleFactor();
+
+        uuid_vec_t avatars;
+        std::vector<LLVector3d> positions;
+        LLWorld::getInstance()->getAvatars(&avatars, &positions, gAgent.getPositionGlobal(), range);
+
+        // Find the closest avatar in front of us, it gets a highlighted label.
+        LLUUID ahead_id;
+        F64 ahead_dist = F64_MAX;
+        for (size_t i = 0; i < avatars.size(); ++i)
+        {
+            if (avatars[i] == gAgentID || positions[i].isNull())
+            {
+                continue;
+            }
+            LLVector3 delta = LLVector3(positions[i] - my_pos);
+            F64 dist = delta.magVec();
+            if (dist > 0.1 && (delta * my_at) > 0.f && dist < ahead_dist)
+            {
+                ahead_dist = dist;
+                ahead_id = avatars[i];
+            }
+        }
+
+        std::set<LLUUID> seen;
+        for (size_t i = 0; i < avatars.size(); ++i)
+        {
+            const LLUUID& id = avatars[i];
+            if (id == gAgentID || positions[i].isNull())
+            {
+                continue;
+            }
+            seen.insert(id);
+            const LLVector3d& target_pos = positions[i];
+
+            LLColor4 color = map_avatar_color.get();
+            LLColor4 mark_color;
+            if (LLNetMap::getAvatarMarkColor(id, mark_color))
+            {
+                color = mark_color;
+            }
+            const bool is_ahead = (id == ahead_id);
+
+            // Record the trail, at most ten samples per second.
+            racing_trail_t& trail = sRacingTrails[id];
+            if (trail.empty() || now - trail.back().mTime > 0.1)
+            {
+                trail.push_back({ now, target_pos });
+            }
+            while (!trail.empty() && now - trail.front().mTime > trail_seconds)
+            {
+                trail.pop_front();
+            }
+
+            if (show_trail && trail.size() > 1)
+            {
+                LLCoordGL prev_pt;
+                bool prev_ok = false;
+                for (size_t t = 0; t < trail.size(); ++t)
+                {
+                    LLCoordGL pt;
+                    bool ok = camera.projectPosAgentToScreen(gAgent.getPosAgentFromGlobal(trail[t].mPos), pt, false);
+                    if (ok && prev_ok)
+                    {
+                        // Older parts of the trail fade out.
+                        F32 age = (F32)((now - trail[t].mTime) / llmax((F64)trail_seconds, 0.1));
+                        LLColor4 c = color;
+                        c.mV[VALPHA] = llclamp(1.f - age, 0.1f, 1.f);
+                        gl_line_2d((S32)(prev_pt.mX / scale.mV[VX]), (S32)(prev_pt.mY / scale.mV[VY]),
+                                   (S32)(pt.mX / scale.mV[VX]), (S32)(pt.mY / scale.mV[VY]), c);
+                    }
+                    prev_pt = pt;
+                    prev_ok = ok;
+                }
+            }
+
+            if (show_labels)
+            {
+                LLCoordGL pt;
+                if (camera.projectPosAgentToScreen(gAgent.getPosAgentFromGlobal(target_pos), pt, false))
+                {
+                    std::string name = unknown_agent;
+                    LLAvatarName avatar_name;
+                    if (!hide_names && LLAvatarNameCache::get(id, &avatar_name))
+                    {
+                        name = avatar_name.getCompleteName();
+                    }
+                    const F32 dist = (F32)(target_pos - my_pos).magVec();
+                    std::string text = hide_names ? llformat("%.1fm", dist) : llformat("%s, %.1fm", name.c_str(), dist);
+                    LLFontGL::getFontSansSerifBold()->renderUTF8(
+                        text, 0, pt.mX / scale.mV[VX], pt.mY / scale.mV[VY] + 24.f,
+                        is_ahead ? LLColor4::yellow : color,
+                        LLFontGL::HCENTER, LLFontGL::BOTTOM,
+                        is_ahead ? LLFontGL::BOLD : LLFontGL::NORMAL, LLFontGL::DROP_SHADOW_SOFT);
+                }
+            }
+        }
+
+        // Forget trails of avatars that left the range.
+        for (auto it = sRacingTrails.begin(); it != sRacingTrails.end();)
+        {
+            it = seen.count(it->first) ? std::next(it) : sRacingTrails.erase(it);
+        }
+    }
+}
+// </FS>
+
 void LLViewerWindow::draw()
 {
 
@@ -3317,6 +3463,10 @@ void LLViewerWindow::draw()
             }
         }
         // </exodus>
+
+        // <FS> Racing Marker (third person)
+        draw_racing_marker();
+        // </FS>
 
         // Only show Mouselookinstructions if FSShowMouselookInstruction is true
         static LLCachedControl<bool> fsShowMouselookInstructions(gSavedSettings, "FSShowMouselookInstructions");
