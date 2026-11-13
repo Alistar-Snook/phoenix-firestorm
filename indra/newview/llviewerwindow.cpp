@@ -3238,6 +3238,9 @@ namespace
             {
                 LLCoordGL prev_pt;
                 bool prev_ok = false;
+                // One draw call per avatar: all trail segments go into a single LINES batch.
+                gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
+                gGL.begin(LLRender::LINES);
                 for (size_t t = 0; t < trail.size(); ++t)
                 {
                     LLCoordGL pt;
@@ -3249,11 +3252,14 @@ namespace
                         LLColor4 c = color;
                         c.mV[VALPHA] = llclamp(1.f - age, 0.1f, 1.f);
                         // projectPosAgentToScreen() already returns UI-scaled coordinates
-                        gl_line_2d(prev_pt.mX, prev_pt.mY, pt.mX, pt.mY, c);
+                        gGL.color4fv(c.mV);
+                        gGL.vertex2i(prev_pt.mX, prev_pt.mY);
+                        gGL.vertex2i(pt.mX, pt.mY);
                     }
                     prev_pt = pt;
                     prev_ok = ok;
                 }
+                gGL.end();
             }
 
             // Label text (name and/or distance) shared by the on-screen label and the edge arrow.
