@@ -205,7 +205,7 @@ LibVLCのバージョン：[LIBVLC_VERSION]
 	<string name="AditiGridLabelShort">Aditi（ベータ）</string>
 	<string name="LoginFailedViewerNotPermitted">
 		お使いの古いビューアでは、[CURRENT_GRID]にアクセスできません。以下のページから新しいビューアをダウンロードしてください：
-https://www.firestormviewer.org/choose-your-platform/
+https://github.com/Alistar-Snook/phoenix-firestorm/releases
 
 詳細については、ＦＡＱを参照してください：
 https://secondlife.com/viewer-access-faq
@@ -490,7 +490,7 @@ https://secondlife.com/viewer-access-faq
 	</string>
 	<string name="TooltipPrice" value="L$ [AMOUNT]："/>
 	<string name="TooltipSLIcon">
-		これは、SecondLife.com、LindenLab.com、または firestormviewer.org の公式ドメイン上のページにリンクします。
+		これは、SecondLife.com、LindenLab.com、または secondlife.com の公式ドメイン上のページにリンクします。
 	</string>
 	<string name="TooltipFlagScript">スクリプト</string>
 	<string name="TooltipFlagPhysics">物理効果</string>
@@ -3227,7 +3227,7 @@ https://support.secondlife.com よりSecond Lifeのサポートまでお問い�
 クラッシュ報告を送信しますか？
 	</string>
 	<string name="MBFreezeDetected">
-		[APP_NAME]がフリーズしたようです。この問題が頻繁に発生する場合は、https://www.firestormviewer.org/support からサポートにお問い合わせください。
+		[APP_NAME]がフリーズしたようです。この問題が頻繁に発生する場合は、https://github.com/Alistar-Snook/phoenix-firestorm/releases からサポートにお問い合わせください。
 	</string>
 	<string name="MBAlert">
 		通知

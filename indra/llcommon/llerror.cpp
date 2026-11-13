@@ -1688,8 +1688,8 @@ namespace LLError
         // Files Are missing, likely can't localize.
         const std::string error_string =
             "Firestorm couldn't access some of the files it needs and will be closed."
-            "\n\nPlease reinstall viewer from https://www.firestormviewer.org/download and "
-            "contact https://www.firestormviewer.org/support if issue persists after reinstall.";
+            "\n\nPlease reinstall viewer from https://github.com/Alistar-Snook/phoenix-firestorm/releases and "
+            "contact https://github.com/Alistar-Snook/phoenix-firestorm/issues if issue persists after reinstall.";
         sHandler("Missing Files", error_string, ERROR_MISSING_FILES);
     }
 

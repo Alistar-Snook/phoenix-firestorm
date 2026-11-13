@@ -66,7 +66,7 @@ std::string details(const FSCrashReport::Report& report)
     text << "\nThe viewer log is not sent. Settings are included only when enabled in your crash-reporting preferences."
             "\nCrash dumps may contain personal information from memory."
             "\n\nReport files and submission log (bugsplat.log):\n" << report.directory.string()
-         << "\n\nPrivacy policy: https://www.firestormviewer.org/privacy-policy";
+         << "\n\nPrivacy policy: https://github.com/Alistar-Snook/phoenix-firestorm/blob/aether/PRIVACY.md";
     return text.str();
 }
 

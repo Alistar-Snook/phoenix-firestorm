@@ -1078,7 +1078,7 @@ bool idle_startup()
 
 // <AW: opensim>
 #ifndef SINGLEGRID
-        if(!gSavedSettings.getBOOL("GridListDownload"))
+        if(!gSavedSettings.getBOOL("GridListDownload") || gSavedSettings.getString("GridListDownloadURL").empty())
         {
             sGridListRequestReady = true;
         }
@@ -3619,7 +3619,7 @@ bool idle_startup()
         }
         // </FS:Techwolf Lupindo>
         // <FS:PP>
-        if (gSavedSettings.getBOOL("AutoQueryGridStatus"))
+        if (gSavedSettings.getBOOL("AutoQueryGridStatus") && !gSavedSettings.getString("AutoQueryGridStatusURL").empty())
         {
             FSCoreHttpUtil::callbackHttpGetRaw(gSavedSettings.getString("AutoQueryGridStatusURL"),
                 downloadGridstatusComplete, [](const LLSD& data) { downloadGridstatusError(data, gSavedSettings.getString("AutoQueryGridStatusURL")); });

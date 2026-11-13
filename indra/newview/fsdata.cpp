@@ -59,7 +59,8 @@
 #include "rlvhelper.h"
 // [/RLVa:KB]
 
-const std::string LEGACY_CLIENT_LIST_URL = "http://phoenixviewer.com/app/client_tags/client_list_v2.xml";
+// Aether: legacy client tag list download removed (no central server).
+const std::string LEGACY_CLIENT_LIST_URL = "";
 const LLUUID MAGIC_ID("3c115e51-04f4-523c-9fa6-98aff1034730");
 
 FSData::FSData() :
@@ -70,8 +71,14 @@ FSData::FSData() :
     mHeaders.insert("User-Agent", LLViewerMedia::getInstance()->getCurrentUserAgent());
     mHeaders.insert("viewer-version", LLVersionInfo::getInstance()->getChannelAndVersionFS());
 
-    mBaseURL = gSavedSettings.getBOOL("FSdataQAtest") ? "http://phoenixviewer.com/app/fsdatatest" : "http://phoenixviewer.com/app/fsdata";
-    mFSDataURL = mBaseURL + "/" + "data.xml";
+    // Aether: no central data server by default. FSDataBaseURL is empty, which keeps
+    // FSData inert (no downloads, no startup waits). Set it to re-enable.
+    mBaseURL = gSavedSettings.getString("FSDataBaseURL");
+    while (!mBaseURL.empty() && mBaseURL.back() == '/')
+    {
+        mBaseURL.pop_back();
+    }
+    mFSDataURL = mBaseURL.empty() ? std::string() : mBaseURL + "/" + "data.xml";
 }
 
 FSData::~FSData()
@@ -295,6 +302,13 @@ static void downloadError(LLSD const &aData, std::string const &aURL)
 // call this just before the login screen and after the LLProxy has been setup.
 void FSData::startDownload()
 {
+    if (mBaseURL.empty())
+    {
+        LL_INFOS("fsdata") << "FSDataBaseURL is empty, FSData disabled." << LL_ENDL;
+        mFSDataDone = true;
+        return;
+    }
+
     mFSdataFilename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "fsdata.xml");
     mFSdataDefaultsFilename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, llformat("fsdata_defaults.%s.xml", LLVersionInfo::getInstance()->getShortVersion().c_str()));
     mClientTagsFilename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "client_list_v2.xml");
@@ -354,6 +368,12 @@ void FSData::startDownload()
 // call this _after_ the login screen to pick up grid data.
 void FSData::downloadAgents()
 {
+    if (mBaseURL.empty())
+    {
+        mAgentsDone = true;
+        return;
+    }
+
 #ifdef OPENSIM
     std::string filename_prefix = LLGridManager::getInstance()->getGridId();
 #else
@@ -466,7 +486,7 @@ void FSData::processData(const LLSD& fs_data)
 
     // FSUseLegacyClienttags: 0=Off, 1=Local Clienttags, 2=Download Clienttags
     static LLCachedControl<U32> use_legacy_tags(gSavedSettings, "FSUseLegacyClienttags");
-    if (use_legacy_tags > 1)
+    if (use_legacy_tags > 1 && !LEGACY_CLIENT_LIST_URL.empty())
     {
         time_t last_modified = 0;
         llstat stat_data;

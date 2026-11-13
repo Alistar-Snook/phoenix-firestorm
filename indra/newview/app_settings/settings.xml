@@ -145,7 +145,7 @@
   <key>GridListDownload</key>
   <map>
     <key>Comment</key>
-    <string>Whether to fetch a grid list from the URL specified in GridListDownloadURL.</string>
+    <string>Whether to fetch a grid list from the URL specified in GridListDownloadURL (ignored when the URL is empty).</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
@@ -162,7 +162,7 @@
     <key>Type</key>
     <string>String</string>
     <key>Value</key>
-    <string>http://phoenixviewer.com/app/fsdata/grids.xml</string>
+    <string></string>
   </map>
   <key>FSPrimfeedViewerApiKey</key>
   <map>
@@ -184,7 +184,7 @@
     <key>Type</key>
     <string>String</string>
     <key>Value</key>
-    <string>https://phoenixviewer.com/app/fsdata/fs_grid_builder.html</string>
+    <string></string>
   </map>
   <key>LastConnectedGrid</key>
   <map>
@@ -6274,7 +6274,7 @@
       <key>Type</key>
       <string>String</string>
       <key>Value</key>
-      <string>https://wiki.firestormviewer.org/[TOPIC]</string>
+      <string>https://github.com/Alistar-Snook/phoenix-firestorm/wiki/[TOPIC]</string>
       <key>Backup</key>
       <integer>0</integer>
     </map>
@@ -6287,7 +6287,7 @@
       <key>Type</key>
       <string>String</string>
       <key>Value</key>
-      <string>https://wiki.firestormviewer.org/start#basic_functions</string>
+      <string>https://github.com/Alistar-Snook/phoenix-firestorm/wiki</string>
       <key>Backup</key>
       <integer>0</integer>
     </map>    
@@ -14198,7 +14198,7 @@ Change of this parameter will affect the layout of buttons in notification toast
 			<key>Type</key>
 			<string>String</string>
 			<key>Value</key>
-			<string>https://phoenixviewer.com/app/file-a-jira/?environment=[ENVIRONMENT]</string>
+			<string>https://github.com/Alistar-Snook/phoenix-firestorm/issues/new</string>
 		</map>
 	<key>RevokePermsOnStopAnimation</key>
     <map>
@@ -25233,6 +25233,17 @@ Change of this parameter will affect the layout of buttons in notification toast
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>FSDataBaseURL</key>
+    <map>
+      <key>Comment</key>
+      <string>Base URL of an optional central data server (data.xml, agents.xml, assets.xml). Empty = disabled.</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string></string>
+    </map>
     <key>FSdataQAtest</key>
       <map>
       <key>Comment</key>
@@ -25619,7 +25630,7 @@ Change of this parameter will affect the layout of buttons in notification toast
       <key>Type</key>
       <string>String</string>
       <key>Value</key>
-      <string>https://phoenixviewer.com/app/loginV3/secondlifegrid.xml</string>
+      <string></string>
     </map>
     <key>FSIgnoreAdHocSessions</key>
     <map>

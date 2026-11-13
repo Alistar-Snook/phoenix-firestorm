@@ -168,8 +168,8 @@ LLControlVariable::LLControlVariable(const std::string& name, eControlType type,
         std::string error_string =
             "Firestorm failed to initialize settings. Setting " + mName + " is invalid. "
             "Either settings files were supplied incorrectly or default files were corrupted."
-            "\n\nPlease reinstall viewer from https://www.firestormviewer.org/downloads and "
-            "contact https://www.firestormviewer.org/support if issue persists after reinstall.";
+            "\n\nPlease reinstall viewer from https://github.com/Alistar-Snook/phoenix-firestorm/releases and "
+            "contact https://github.com/Alistar-Snook/phoenix-firestorm/issues if issue persists after reinstall.";
         LLError::LLUserWarningMsg::show(error_string);
         LL_ERRS() << "Must supply a comment for control " << mName << LL_ENDL;
     }

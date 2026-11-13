@@ -216,7 +216,7 @@ Wersja serwera głosu (Voice Server): [VOICE_VERSION]
 	</string>
 	<string name="LoginFailedViewerNotPermitted">
 		Przeglądarka używana przez Ciebie nie ma już dostępu do Second Life. Proszę przejść na poniższą stronę i pobrać nową:
-https://www.firestormviewer.org/choose-your-platform/
+https://github.com/Alistar-Snook/phoenix-firestorm/releases
 
 Więcej informacji w naszym FAQ:
 http://secondlife.com/viewer-access-faq
@@ -552,7 +552,7 @@ Jeśli myślisz, że to błąd skontaktuj się z support@secondlife.com
 	</string>
 	<string name="TooltipPrice" value="[AMOUNT]L$: "/>
 	<string name="TooltipSLIcon">
-		Link do strony znajdującej się w oficjalnej domenie SecondLife.com, LindenLab.com lub firestormviewer.org.
+		Link do strony znajdującej się w oficjalnej domenie SecondLife.com, LindenLab.com lub secondlife.com.
 	</string>
 	<string name="TooltipFlagScript">
 		Skrypt
@@ -856,7 +856,7 @@ są dozwolone.
 	</string>
 	<string name="AssetUploadRequestInvalid">
 		Błąd podczas przesyłania. Odwiedź
-https://www.firestormviewer.org/support aby uzyskać pomoc.
+https://github.com/Alistar-Snook/phoenix-firestorm/releases aby uzyskać pomoc.
 	</string>
 	<string name="SettingValidationError">
 		Walidacja nie powiodła się - importowanie ustawień [NAME]
@@ -3141,7 +3141,7 @@ Jeżeli nadal otrzymujesz ten komunikat, uruchom swój komputer ponownie.
 Czy chcesz wysłać raport na temat zawieszenia?
 	</string>
 	<string name="MBFreezeDetected">
-		Wygląda na to, że [APP_NAME] zawiesił się. Jeśli ten problem występuje regularnie, skontaktuj się ze wsparciem technicznym pod adresem https://www.firestormviewer.org/support.
+		Wygląda na to, że [APP_NAME] zawiesił się. Jeśli ten problem występuje regularnie, skontaktuj się ze wsparciem technicznym pod adresem https://github.com/Alistar-Snook/phoenix-firestorm/releases.
 	</string>
 	<string name="MBAlert">
 		Powiadomienie

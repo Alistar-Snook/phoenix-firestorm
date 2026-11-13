@@ -216,7 +216,7 @@ Versão do servidor de voz: [VOICE_VERSION]
 	</string>
 	<string name="LoginFailedViewerNotPermitted">
 		O viewer que você está usando não pode mais acessar o Second Life. Acesse a página abaixo para baixar um novo viewer:
-https://www.firestormviewer.org/choose-your-platform/
+https://github.com/Alistar-Snook/phoenix-firestorm/releases
 Para mais informações, veja o FAQ abaixo:
 http://secondlife.com/viewer-access-faq
 	</string>
@@ -536,7 +536,7 @@ Se você acredita que isso é um erro, entre em contato com support@secondlife.c
 		Você não pode vestir uma pasta com mais de [AMOUNT] itens. Você pode alterar esse limite em Avançado &gt; Mostrar configurações de depuração &gt; WearFolderLimit.
 	</string>
 	<string name="TooltipSLIcon">
-		Isso leva a uma página no domínio oficial SecondLife.com, LindenLab.com ou firestormviewer.org.
+		Isso leva a uma página no domínio oficial SecondLife.com, LindenLab.com ou secondlife.com.
 	</string>
 	<string name="TooltipFlagScript">
 		Script
@@ -837,7 +837,7 @@ são permitidas.
 	</string>
 	<string name="AssetUploadRequestInvalid">
 Erro na solicitação de upload. Acesse
-https://www.firestormviewer.org/support para obter ajuda com este problema.
+https://github.com/Alistar-Snook/phoenix-firestorm/releases para obter ajuda com este problema.
 	</string>
 	<string name="SettingValidationError">
 		Falha na validação ao importar a configuração [NAME]
