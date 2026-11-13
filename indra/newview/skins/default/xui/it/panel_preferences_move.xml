@@ -39,7 +39,9 @@
 			<check_box label="Mostra crocetta per mouselook" name="ShowCrosshairs" tool_tip="Mostra il mirino a crocetta quando in modalità mouselook"/>
 			<check_box label="Abilità funzioni combattimento" name="FSMouselookCombatFeatures"/>
 			<check_box label="Racing Marker (terza persona)" name="FSRacingMarker" tool_tip="Mostra nome/distanza e una scia dietro agli avatar vicini in terza persona, utile per le gare"/>
-			<check_box label="Etichette nome e distanza" name="FSRacingMarkerLabels"/>
+			<check_box label="Etichette vicino agli avatar" name="FSRacingMarkerLabels"/>
+			<check_box label="Mostra nome" name="FSRacingMarkerName"/>
+			<check_box label="Mostra distanza" name="FSRacingMarkerDistance"/>
 			<check_box label="Scia dietro agli avatar" name="FSRacingMarkerTrail"/>
 			<slider label="Raggio (m):" name="FSRacingMarkerRange"/>
 			<slider label="Lunghezza scia (s):" name="FSRacingMarkerTrailSeconds"/>

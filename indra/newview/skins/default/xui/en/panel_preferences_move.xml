@@ -357,12 +357,33 @@
          enabled_control="FSRacingMarker"
          follows="left|top"
          height="16"
-         label="Name and distance labels"
+         label="Labels near avatars"
          layout="topleft"
          left_delta="10"
          name="FSRacingMarkerLabels"
          top_pad="5"
          width="246" />
+        <check_box
+         control_name="FSRacingMarkerName"
+         enabled_control="FSRacingMarker"
+         follows="left|top"
+         height="16"
+         label="Show name"
+         layout="topleft"
+         left_delta="10"
+         name="FSRacingMarkerName"
+         top_pad="5"
+         width="236" />
+        <check_box
+         control_name="FSRacingMarkerDistance"
+         enabled_control="FSRacingMarker"
+         follows="left|top"
+         height="16"
+         label="Show distance"
+         layout="topleft"
+         name="FSRacingMarkerDistance"
+         top_pad="5"
+         width="236" />
         <check_box
          control_name="FSRacingMarkerTrail"
          enabled_control="FSRacingMarker"
@@ -370,6 +391,7 @@
          height="16"
          label="Trail behind avatars"
          layout="topleft"
+         left_delta="-10"
          name="FSRacingMarkerTrail"
          top_pad="5"
          width="246" />

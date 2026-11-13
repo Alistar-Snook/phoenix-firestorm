@@ -3155,6 +3155,8 @@ namespace
         static LLCachedControl<bool> enabled(gSavedSettings, "FSRacingMarker", false);
         static LLCachedControl<F32> range(gSavedSettings, "FSRacingMarkerRange", 300.f);
         static LLCachedControl<bool> show_labels(gSavedSettings, "FSRacingMarkerLabels", true);
+        static LLCachedControl<bool> show_name(gSavedSettings, "FSRacingMarkerName", true);
+        static LLCachedControl<bool> show_distance(gSavedSettings, "FSRacingMarkerDistance", true);
         static LLCachedControl<bool> show_trail(gSavedSettings, "FSRacingMarkerTrail", true);
         static LLCachedControl<F32> trail_seconds(gSavedSettings, "FSRacingMarkerTrailSeconds", 5.f);
 
@@ -3174,7 +3176,6 @@ namespace
         static const std::string unknown_agent = LLTrans::getString("Mouselook_Unknown_Avatar");
         static LLUIColor map_avatar_color = LLUIColorTable::instance().getColor("MapAvatarColor", LLColor4::white);
         const LLViewerCamera& camera = LLViewerCamera::instance();
-        const LLVector2& scale = LLUI::getScaleFactor();
 
         uuid_vec_t avatars;
         std::vector<LLVector3d> positions;
@@ -3242,8 +3243,8 @@ namespace
                         F32 age = (F32)((now - trail[t].mTime) / llmax((F64)trail_seconds, 0.1));
                         LLColor4 c = color;
                         c.mV[VALPHA] = llclamp(1.f - age, 0.1f, 1.f);
-                        gl_line_2d((S32)(prev_pt.mX / scale.mV[VX]), (S32)(prev_pt.mY / scale.mV[VY]),
-                                   (S32)(pt.mX / scale.mV[VX]), (S32)(pt.mY / scale.mV[VY]), c);
+                        // projectPosAgentToScreen() already returns UI-scaled coordinates
+                        gl_line_2d(prev_pt.mX, prev_pt.mY, pt.mX, pt.mY, c);
                     }
                     prev_pt = pt;
                     prev_ok = ok;
@@ -3253,7 +3254,9 @@ namespace
             if (show_labels)
             {
                 LLCoordGL pt;
-                if (camera.projectPosAgentToScreen(gAgent.getPosAgentFromGlobal(target_pos), pt, false))
+                // Anchor the label about one meter above the avatar origin (roughly the head).
+                LLVector3 label_pos = gAgent.getPosAgentFromGlobal(target_pos) + LLVector3(0.f, 0.f, 1.f);
+                if (camera.projectPosAgentToScreen(label_pos, pt, false))
                 {
                     std::string name = unknown_agent;
                     LLAvatarName avatar_name;
@@ -3262,9 +3265,26 @@ namespace
                         name = avatar_name.getCompleteName();
                     }
                     const F32 dist = (F32)(target_pos - my_pos).magVec();
-                    std::string text = hide_names ? llformat("%.1fm", dist) : llformat("%s, %.1fm", name.c_str(), dist);
+                    const bool with_name = show_name && !hide_names;
+                    std::string text;
+                    if (with_name && show_distance)
+                    {
+                        text = llformat("%s, %.1fm", name.c_str(), dist);
+                    }
+                    else if (with_name)
+                    {
+                        text = name;
+                    }
+                    else if (show_distance)
+                    {
+                        text = llformat("%.1fm", dist);
+                    }
+                    if (text.empty())
+                    {
+                        continue;
+                    }
                     LLFontGL::getFontSansSerifBold()->renderUTF8(
-                        text, 0, pt.mX / scale.mV[VX], pt.mY / scale.mV[VY] + 24.f,
+                        text, 0, pt.mX, pt.mY + 6,
                         is_ahead ? LLColor4::yellow : color,
                         LLFontGL::HCENTER, LLFontGL::BOTTOM,
                         is_ahead ? LLFontGL::BOLD : LLFontGL::NORMAL, LLFontGL::DROP_SHADOW_SOFT);
