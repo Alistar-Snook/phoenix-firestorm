@@ -110,11 +110,11 @@ jobs:
         run: |
           OPENSIM_FLAG="--no-opensim"
           if [ "${{ inputs.opensim }}" == "true" ]; then OPENSIM_FLAG="--opensim"; fi
-          autobuild configure -c ReleaseFS -A 64 -- --package --chan "${{ inputs.channel }}" $OPENSIM_FLAG -DLL_TESTS:BOOL=OFF
+          autobuild configure -c ReleaseFS_open -A 64 -- --package --chan "${{ inputs.channel }}" $OPENSIM_FLAG -DLL_TESTS:BOOL=OFF
 
       - name: Build
         shell: bash
-        run: autobuild build -c ReleaseFS -A 64 --no-configure
+        run: autobuild build -c ReleaseFS_open -A 64 --no-configure
 
       - name: Collect installer
         shell: bash
@@ -130,8 +130,3 @@ jobs:
           path: out/*
           if-no-files-found: error
           retention-days: 14
-
-
-      - name: post release URL
-        run: |
-          echo "::notice::Release ${{ steps.release.outputs.url }}"
