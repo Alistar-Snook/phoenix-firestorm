@@ -42,6 +42,7 @@
 			<check_box label="Etichette vicino agli avatar" name="FSRacingMarkerLabels"/>
 			<check_box label="Mostra nome" name="FSRacingMarkerName"/>
 			<check_box label="Mostra distanza" name="FSRacingMarkerDistance"/>
+			<check_box label="Frecce per avatar fuori vista" name="FSRacingMarkerArrows"/>
 			<check_box label="Scia dietro agli avatar" name="FSRacingMarkerTrail"/>
 			<slider label="Raggio (m):" name="FSRacingMarkerRange"/>
 			<slider label="Lunghezza scia (s):" name="FSRacingMarkerTrailSeconds"/>

@@ -107,6 +107,8 @@ public:
 
     // <FS:Ansariel> Exodus' mouselook combat feature
     void drawMarker(const LLVector3d& pos_global, const LLColor4& color, bool is_iff = false);
+    // <FS> Racing Marker: centre of the arrow drawn by the last drawMarker() call (HUD coordinates)
+    void getHUDArrowCenter(S32& x, S32& y) const { x = mHUDArrowCenterX; y = mHUDArrowCenterY; }
 
 protected:
     LLTracker();

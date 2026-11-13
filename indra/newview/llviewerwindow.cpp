@@ -3158,6 +3158,7 @@ namespace
         static LLCachedControl<bool> show_name(gSavedSettings, "FSRacingMarkerName", true);
         static LLCachedControl<bool> show_distance(gSavedSettings, "FSRacingMarkerDistance", true);
         static LLCachedControl<bool> show_trail(gSavedSettings, "FSRacingMarkerTrail", true);
+        static LLCachedControl<bool> show_arrows(gSavedSettings, "FSRacingMarkerArrows", true);
         static LLCachedControl<F32> trail_seconds(gSavedSettings, "FSRacingMarkerTrailSeconds", 5.f);
 
         if (!enabled || gAgentCamera.cameraMouselook())
@@ -3210,7 +3211,11 @@ namespace
             seen.insert(id);
             const LLVector3d& target_pos = positions[i];
 
+            // Same colors as the minimap dots: contact sets, then the Radar "Mark" color.
+            LGGContactSets& contact_sets = LGGContactSets::instance();
             LLColor4 color = map_avatar_color.get();
+            color = contact_sets.colorize(id, color, ContactSetType::MINIMAP);
+            contact_sets.hasFriendColorThatShouldShow(id, ContactSetType::MINIMAP, color);
             LLColor4 mark_color;
             if (LLNetMap::getAvatarMarkColor(id, mark_color))
             {
@@ -3251,43 +3256,63 @@ namespace
                 }
             }
 
+            // Label text (name and/or distance) shared by the on-screen label and the edge arrow.
+            std::string label_text;
             if (show_labels)
             {
-                LLCoordGL pt;
-                // Anchor the label about one meter above the avatar origin (roughly the head).
-                LLVector3 label_pos = gAgent.getPosAgentFromGlobal(target_pos) + LLVector3(0.f, 0.f, 1.f);
-                if (camera.projectPosAgentToScreen(label_pos, pt, false))
+                std::string name = unknown_agent;
+                LLAvatarName avatar_name;
+                if (!hide_names && LLAvatarNameCache::get(id, &avatar_name))
                 {
-                    std::string name = unknown_agent;
-                    LLAvatarName avatar_name;
-                    if (!hide_names && LLAvatarNameCache::get(id, &avatar_name))
-                    {
-                        name = avatar_name.getCompleteName();
-                    }
-                    const F32 dist = (F32)(target_pos - my_pos).magVec();
-                    const bool with_name = show_name && !hide_names;
-                    std::string text;
-                    if (with_name && show_distance)
-                    {
-                        text = llformat("%s, %.1fm", name.c_str(), dist);
-                    }
-                    else if (with_name)
-                    {
-                        text = name;
-                    }
-                    else if (show_distance)
-                    {
-                        text = llformat("%.1fm", dist);
-                    }
-                    if (text.empty())
-                    {
-                        continue;
-                    }
+                    name = avatar_name.getCompleteName();
+                }
+                const F32 dist = (F32)(target_pos - my_pos).magVec();
+                const bool with_name = show_name && !hide_names;
+                if (with_name && show_distance)
+                {
+                    label_text = llformat("%s, %.1fm", name.c_str(), dist);
+                }
+                else if (with_name)
+                {
+                    label_text = name;
+                }
+                else if (show_distance)
+                {
+                    label_text = llformat("%.1fm", dist);
+                }
+            }
+
+            LLCoordGL pt;
+            // Anchor the label about one meter above the avatar origin (roughly the head).
+            LLVector3 label_pos = gAgent.getPosAgentFromGlobal(target_pos) + LLVector3(0.f, 0.f, 1.f);
+            if (camera.projectPosAgentToScreen(label_pos, pt, false))
+            {
+                if (!label_text.empty())
+                {
                     LLFontGL::getFontSansSerifBold()->renderUTF8(
-                        text, 0, pt.mX, pt.mY + 6,
+                        label_text, 0, pt.mX, pt.mY + 6,
                         is_ahead ? LLColor4::yellow : color,
                         LLFontGL::HCENTER, LLFontGL::BOTTOM,
                         is_ahead ? LLFontGL::BOLD : LLFontGL::NORMAL, LLFontGL::DROP_SHADOW_SOFT);
+                }
+            }
+            else if (show_arrows)
+            {
+                // Out of view (to the sides, above/below or behind the camera): arrow hugging the
+                // screen edge, like the Mouselook combat feature, colored like the minimap dot.
+                LLTracker::instance()->drawMarker(target_pos, color, true);
+                if (!label_text.empty())
+                {
+                    S32 ax = 0, ay = 0;
+                    LLTracker::instance()->getHUDArrowCenter(ax, ay);
+                    const S32 half_width = gHUDView ? gHUDView->getRect().getWidth() / 2 : gViewerWindow->getWorldViewRectScaled().getWidth() / 2;
+                    const bool on_left = ax < half_width;
+                    const S32 offset = 20;  // half of the arrow plus a small gap
+                    LLFontGL::getFontSansSerifBold()->renderUTF8(
+                        label_text, 0, on_left ? ax + offset : ax - offset, ay,
+                        color,
+                        on_left ? LLFontGL::LEFT : LLFontGL::RIGHT, LLFontGL::VCENTER,
+                        LLFontGL::NORMAL, LLFontGL::DROP_SHADOW_SOFT);
                 }
             }
         }

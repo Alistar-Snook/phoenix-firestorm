@@ -432,6 +432,18 @@
          name="FSRacingMarkerDistance"
          top_pad="5"
          width="200" />
+        <check_box
+         control_name="FSRacingMarkerArrows"
+         enabled_control="FSRacingMarker"
+         follows="left|top"
+         height="16"
+         label="Arrows for avatars out of view"
+         layout="topleft"
+         left="270"
+         name="FSRacingMarkerArrows"
+         tool_tip="Arrows at the screen edge point to avatars within range that are not on screen (e.g. behind you). Colors follow the minimap / Radar Mark colors."
+         top_delta="0"
+         width="250" />
     </panel>
 
     <!--Mouselook-->
