@@ -51,7 +51,7 @@ jobs:
     needs: setup
     strategy:
       matrix:
-        runner: ${{ fromJson((github.ref_type == 'tag' && startsWith(github.ref, 'refs/tags/Second_Life')) && '["windows-large","macos-15-xlarge","linux-large"]' || '["windows-2022","macos-15-xlarge","ubuntu-22.04"]') }}
+        runner: ${{ fromJson((github.ref_type == 'tag' && startsWith(github.ref, 'refs/tags/Second_Life')) && '["windows-large","linux-large"]' || '["windows-2022","ubuntu-22.04"]') }}
         configuration: ${{ fromJson(needs.setup.outputs.configurations) }}
         build_variant: [Viewer, Tests]
     runs-on: ${{ matrix.runner }}
@@ -70,12 +70,6 @@ jobs:
       velopack_exclude:       ${{ steps.build.outputs.velopack_exclude }}
       velopack_icon:          ${{ steps.build.outputs.velopack_icon }}
       velopack_installer_base: ${{ steps.build.outputs.velopack_installer_base }}
-      # macOS Velopack outputs (passed to sign-pkg-mac)
-      velopack_mac_pack_id:      ${{ steps.build.outputs.velopack_mac_pack_id }}
-      velopack_mac_pack_version: ${{ steps.build.outputs.velopack_mac_pack_version }}
-      velopack_mac_pack_title:   ${{ steps.build.outputs.velopack_mac_pack_title }}
-      velopack_mac_main_exe:     ${{ steps.build.outputs.velopack_mac_main_exe }}
-      velopack_mac_bundle_id:    ${{ steps.build.outputs.velopack_mac_bundle_id }}
     env:
       AUTOBUILD_ADDRSIZE: 64
       AUTOBUILD_BUILD_ID: ${{ github.run_id }}
@@ -88,7 +82,6 @@ jobs:
       # autobuild-package.xml.
       AUTOBUILD_VCS_INFO: "true"
       AUTOBUILD_VSVER: "170"
-      DEVELOPER_DIR: "/Applications/Xcode_26.3.app/Contents/Developer"
       # Ensure that Linden viewer builds engage Bugsplat.
       BUGSPLAT_DB: ${{ needs.setup.outputs.bugsplat_db }}
       build_log_dir: ${{ github.workspace }}/.logs
@@ -107,8 +100,8 @@ jobs:
       # Only set variants to the one configuration: don't let build.sh loop
       # over variants, let GitHub distribute variants over multiple hosts.
       variants: ${{ matrix.configuration }}
-      # Pass USE_VELOPACK to CMake when using Velopack installer (default) - Windows and macOS
-      autobuild_configure_parameters: ${{ (contains(matrix.runner, 'windows') || contains(matrix.runner, 'macos')) && (github.event.inputs.installer_type || 'velopack') == 'velopack' && '-- -DUSE_VELOPACK:BOOL=ON' || '' }}
+      # Pass USE_VELOPACK to CMake when using Velopack installer (default) - Windows
+      autobuild_configure_parameters: ${{ contains(matrix.runner, 'windows') && (github.event.inputs.installer_type || 'velopack') == 'velopack' && '-- -DUSE_VELOPACK:BOOL=ON' || '' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -186,13 +179,13 @@ jobs:
           token: ${{ github.token }}
 
       - name: Setup .NET for Velopack
-        if: (runner.os == 'Windows' || runner.os == 'macOS') && (github.event.inputs.installer_type || 'velopack') == 'velopack'
+        if: runner.os == 'Windows' && (github.event.inputs.installer_type || 'velopack') == 'velopack'
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '9.0.x'
 
       - name: Install Velopack CLI
-        if: (runner.os == 'Windows' || runner.os == 'macOS') && (github.event.inputs.installer_type || 'velopack') == 'velopack'
+        if: runner.os == 'Windows' && (github.event.inputs.installer_type || 'velopack') == 'velopack'
         shell: bash
         run: dotnet tool install -g vpk
 
@@ -407,53 +400,6 @@ jobs:
           velopack_icon: "${{ needs.build.outputs.velopack_icon }}"
           velopack_installer_base: "${{ needs.build.outputs.velopack_installer_base }}"
 
-  sign-and-package-mac:
-    env:
-      NOTARIZE_CREDS_MACOS:        ${{ secrets.NOTARIZE_CREDS_MACOS }}
-      SIGNING_CERT_MACOS:          ${{ secrets.SIGNING_CERT_MACOS }}
-      SIGNING_CERT_MACOS_IDENTITY: ${{ secrets.SIGNING_CERT_MACOS_IDENTITY }}
-      SIGNING_CERT_MACOS_PASSWORD: ${{ secrets.SIGNING_CERT_MACOS_PASSWORD }}
-    needs: build
-    runs-on: macos-latest
-    steps:
-      - name: Unpack Mac notarization credentials
-        if: env.NOTARIZE_CREDS_MACOS
-        id: note-creds
-        shell: bash
-        run: |
-          # In NOTARIZE_CREDS_MACOS we expect to find:
-          # USERNAME="..."
-          # PASSWORD="..."
-          # TEAM_ID="..."
-          eval "${{ env.NOTARIZE_CREDS_MACOS }}"
-          echo "::add-mask::$USERNAME"
-          echo "::add-mask::$PASSWORD"
-          echo "::add-mask::$TEAM_ID"
-          echo "note_user=$USERNAME" >> "$GITHUB_OUTPUT"
-          echo "note_pass=$PASSWORD" >> "$GITHUB_OUTPUT"
-          echo "note_team=$TEAM_ID" >> "$GITHUB_OUTPUT"
-          # If we didn't manage to retrieve all of these credentials, better
-          # find out sooner than later.
-          [[ -n "$USERNAME" && -n "$PASSWORD" && -n "$TEAM_ID" ]]
-
-      - name: Sign and package Mac viewer
-        if: env.SIGNING_CERT_MACOS && env.SIGNING_CERT_MACOS_IDENTITY && env.SIGNING_CERT_MACOS_PASSWORD && steps.note-creds.outputs.note_user && steps.note-creds.outputs.note_pass && steps.note-creds.outputs.note_team
-        uses: secondlife/viewer-build-util/sign-pkg-mac@36042b6c29e2ceb4f578628df7cd48f80e83f29c
-        with:
-          channel: ${{ needs.build.outputs.viewer_channel }}
-          imagename: ${{ needs.build.outputs.imagename }}
-          cert_base64: ${{ env.SIGNING_CERT_MACOS }}
-          cert_name: ${{ env.SIGNING_CERT_MACOS_IDENTITY }}
-          cert_pass: ${{ env.SIGNING_CERT_MACOS_PASSWORD }}
-          note_user: ${{ steps.note-creds.outputs.note_user }}
-          note_pass: ${{ steps.note-creds.outputs.note_pass }}
-          note_team: ${{ steps.note-creds.outputs.note_team }}
-          velopack_pack_id: "${{ needs.build.outputs.velopack_mac_pack_id }}"
-          velopack_pack_version: "${{ needs.build.outputs.velopack_mac_pack_version }}"
-          velopack_pack_title: "${{ needs.build.outputs.velopack_mac_pack_title }}"
-          velopack_main_exe: "${{ needs.build.outputs.velopack_mac_main_exe }}"
-          velopack_bundle_id: "${{ needs.build.outputs.velopack_mac_bundle_id }}"
-
   post-windows-symbols:
     env:
       BUGSPLAT_DATABASE: "${{ secrets.BUGSPLAT_DATABASE }}"
@@ -492,52 +438,8 @@ jobs:
           node-version: "22"
           dumpSyms: false
 
-  # Upload can be failure prone and we might need to reupload in some cases,
-  # Keep upload as a separate job, to not require full rebuild on upload failure.
-  post-mac-symbols:
-    env:
-      BUGSPLAT_DATABASE: "${{ secrets.BUGSPLAT_DATABASE }}"
-      SYMBOL_UPLOAD_CLIENT_ID: "${{ secrets.BUGSPLAT_SYMBOL_UPLOAD_CLIENT_ID }}"
-      SYMBOL_UPLOAD_CLIENT_SECRET: "${{ secrets.BUGSPLAT_SYMBOL_UPLOAD_CLIENT_SECRET }}"
-    needs: build
-    if: needs.build.outputs.configuration == 'Release'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download Mac Symbols
-        if: env.BUGSPLAT_DATABASE && env.SYMBOL_UPLOAD_CLIENT_ID
-        uses: actions/download-artifact@v8
-        with:
-          name: macOS-symbols
-      - name: Extract dSYM bundles
-        if: env.BUGSPLAT_DATABASE && env.SYMBOL_UPLOAD_CLIENT_ID
-        shell: bash
-        run: |
-          mkdir -p _mac_symbols
-          shopt -s nullglob globstar
-          archives=( **/*.xcarchive.zip )
-          if [ ${#archives[@]} -eq 0 ]; then
-            echo "No .xcarchive.zip archives found in downloaded macOS-symbols artifact"
-            exit 1
-          fi
-          for archive in "${archives[@]}"; do
-            unzip -q "$archive" -d _mac_symbols
-          done
-      - name: Post Mac symbols
-        if: env.BUGSPLAT_DATABASE && env.SYMBOL_UPLOAD_CLIENT_ID
-        uses: BugSplat-Git/symbol-upload@b10247248859357264522ebb6d72f225b99be02b
-        with:
-          clientId: "${{ env.SYMBOL_UPLOAD_CLIENT_ID }}"
-          clientSecret: "${{ env.SYMBOL_UPLOAD_CLIENT_SECRET }}"
-          database: "${{ env.BUGSPLAT_DATABASE }}"
-          application: ${{ needs.build.outputs.viewer_channel }}
-          version: ${{ needs.build.outputs.viewer_version }} (${{ needs.build.outputs.viewer_version }})
-          directory: _mac_symbols
-          files: "**/*.dSYM"
-          node-version: "22"
-          dumpSyms: false
-
   release:
-    needs: [setup, build, sign-and-package-windows, sign-and-package-mac]
+    needs: [setup, build, sign-and-package-windows]
     runs-on: ubuntu-latest
     if: needs.setup.outputs.release_run
     steps:
@@ -561,8 +463,6 @@ jobs:
         run: |
           cp Windows-metadata/autobuild-package.xml Windows-autobuild-package.xml
           cp Windows-metadata/newview/viewer_version.txt Windows-viewer_version.txt
-          cp macOS-metadata/autobuild-package.xml macOS-autobuild-package.xml
-          cp macOS-metadata/newview/viewer_version.txt macOS-viewer_version.txt
           cp Linux-metadata/autobuild-package.xml Linux-autobuild-package.xml
           cp Linux-metadata/newview/viewer_version.txt Linux-viewer_version.txt
 
@@ -586,13 +486,11 @@ jobs:
           append_body: true
           fail_on_unmatched_files: false
           files: |
-            macOS-installer/*.dmg
             Windows-installer/*.exe
             *.tar.xz
             *-autobuild-package.xml
             *-viewer_version.txt
             Windows-releases/*
-            macOS-releases/*
 
       - name: post release URL
         run: |
