@@ -2807,7 +2807,7 @@ void errorCallback(LLError::ELevel level, const std::string &error_string)
 
         if (error_display_string.find("MissingString(") != std::string::npos)
         {
-            error_display_string = "We are sorry, but Firestorm has crashed and needs to be closed. If you see this issue happening repeatedly, please contact our support team and submit the following message:\n\n[ERROR_DETAILS]";
+            error_display_string = "We are sorry, but Aether has crashed and needs to be closed. If you see this issue happening repeatedly, please contact support and submit the following message:\n\n[ERROR_DETAILS]";
             LLStringUtil::format(error_display_string, map);
         }
         if (caption.find("MissingString(") != std::string::npos)
@@ -3168,8 +3168,7 @@ bool LLAppViewer::initConfiguration()
         if (gDirUtilp->fileExists(settings_file_list))
         {
             LL_ERRS() << "Cannot load default configuration file settings_files.xml. "
-                << "Please reinstall viewer from https://www.firestormviewer.org/choose-your-platform/ "
-                << "and contact https://www.firestormviewer.org/support if issue persists after reinstall. "
+                << "Please reinstall the viewer and contact support if the issue persists after reinstall. "
                 << "Reason: " << (parse_error.empty() ? "unknown (file is present but could not be parsed)" : parse_error)
                 << ". Install type: " << run_context
                 << LL_ENDL;
@@ -3177,8 +3176,7 @@ bool LLAppViewer::initConfiguration()
         else
         {
             LL_ERRS() << "Default configuration file settings_files.xml not found. "
-                << "Please reinstall viewer from https://www.firestormviewer.org/choose-your-platform/ "
-                << "and contact https://www.firestormviewer.org/support if issue persists after reinstall. "
+                << "Please reinstall the viewer and contact support if the issue persists after reinstall. "
                 << "Install type: " << run_context
                 << LL_ENDL;
         }
@@ -6042,8 +6040,7 @@ void LLAppViewer::badNetworkHandler()
         "Try uninstalling and reinstalling to see if this resolves \n"
         "the issue. \n"
         " \n"
-        "If the problem continues, see the Tech Support FAQ at: \n"
-        "www.firestormviewer.org/support";
+        "If the problem continues, please contact support.";
     forceDisconnect(message.str());
 
     LLApp::instance()->writeMiniDump();

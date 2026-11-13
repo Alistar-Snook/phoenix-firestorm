@@ -33,8 +33,7 @@
         top="16"
         width="434"
         wrap="true">
-For the latest information about Firestorm, visit 
-https://www.firestormviewer.org
+Aether is a Second Life viewer based on the Firestorm Viewer.
       </text>
       <text_editor
         parse_urls="true"
@@ -71,7 +70,7 @@ https://www.firestormviewer.org
         top="16"
         width="489"
         wrap="true">
-Firestorm would not be possible without the decision from Linden Lab to make their Second Life viewer source code available.
+Aether would not be possible without the decision from Linden Lab to make their Second Life viewer source code available.
 
 Second Life is brought to you by the Lindens, 
 with open source contributions from:
@@ -124,7 +123,7 @@ Dummy Name replaced at run time
                  top="0"
                  width="450"
                  wrap="true">
-Firestorm is a community development project to improve the SecondLife(tm) Viewer experience. We package contributions from various community developers along with code from Linden Lab and ourselves to bring you a quality, feature-rich viewer experience backed up by a large volunteer support team. Firestorm is brought to you by The Phoenix Firestorm Project, Inc., a non-profit organization.
+Aether is based on Firestorm, a community development project to improve the SecondLife(tm) Viewer experience. We package contributions from various community developers along with code from Linden Lab and ourselves to bring you a quality, feature-rich viewer experience backed up by a large volunteer support team. Firestorm is brought to you by The Phoenix Firestorm Project, Inc., a non-profit organization.
 
 The Firestorm Development Team:
                 </text>
