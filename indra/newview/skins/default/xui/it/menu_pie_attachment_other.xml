@@ -27,6 +27,7 @@
                 <pie_slice label="Schel. e anim." name="Reset Skeleton And Animations"/>
                 <pie_slice label="Scheletro" name="Reset Skeleton"/>
                 <pie_slice label="LOD mesh" name="Reset Mesh LOD"/>
+                <pie_slice label="Ricarica" name="Reload Avatar"/>
             </pie_menu>
             <pie_menu name="ExportMenu" label="Esporta &gt;">
                 <pie_slice label="Salva copia" name="Backup"/>
