@@ -3150,6 +3150,15 @@ namespace
     typedef std::deque<RacingTrailPoint> racing_trail_t;
     std::map<LLUUID, racing_trail_t> sRacingTrails;
 
+    // Edge arrows are collected here and drawn later by the HUD view
+    struct RacingArrow
+    {
+        LLVector3d mPos;
+        LLColor4 mColor;
+        std::string mLabel;
+    };
+    std::vector<RacingArrow> sRacingArrows;
+
     void draw_racing_marker()
     {
         static LLCachedControl<bool> enabled(gSavedSettings, "FSRacingMarker", false);
@@ -3160,6 +3169,8 @@ namespace
         static LLCachedControl<bool> show_trail(gSavedSettings, "FSRacingMarkerTrail", true);
         static LLCachedControl<bool> show_arrows(gSavedSettings, "FSRacingMarkerArrows", true);
         static LLCachedControl<F32> trail_seconds(gSavedSettings, "FSRacingMarkerTrailSeconds", 5.f);
+
+        sRacingArrows.clear();
 
         if (!enabled || gAgentCamera.cameraMouselook())
         {
@@ -3304,22 +3315,8 @@ namespace
             }
             else if (show_arrows)
             {
-                // Out of view (to the sides, above/below or behind the camera): arrow hugging the
-                // screen edge, like the Mouselook combat feature, colored like the minimap dot.
-                LLTracker::instance()->drawMarker(target_pos, color, true);
-                if (!label_text.empty())
-                {
-                    S32 ax = 0, ay = 0;
-                    LLTracker::instance()->getHUDArrowCenter(ax, ay);
-                    const S32 half_width = gHUDView ? gHUDView->getRect().getWidth() / 2 : gViewerWindow->getWorldViewRectScaled().getWidth() / 2;
-                    const bool on_left = ax < half_width;
-                    const S32 offset = 20;  // half of the arrow plus a small gap
-                    LLFontGL::getFontSansSerifBold()->renderUTF8(
-                        label_text, 0, on_left ? ax + offset : ax - offset, ay,
-                        color,
-                        on_left ? LLFontGL::LEFT : LLFontGL::RIGHT, LLFontGL::VCENTER,
-                        LLFontGL::NORMAL, LLFontGL::DROP_SHADOW_SOFT);
-                }
+                // Drawn by draw_racing_marker_arrows(), in HUD view coordinates
+                sRacingArrows.push_back({ target_pos, color, label_text });
             }
         }
 
@@ -3329,6 +3326,36 @@ namespace
             it = seen.count(it->first) ? std::next(it) : sRacingTrails.erase(it);
         }
     }
+}
+
+// Called from LLHUDView::draw(), so the arrows use the same coordinates as the tracker arrow
+void draw_racing_marker_arrows()
+{
+    const LLViewerCamera& camera = LLViewerCamera::instance();
+    for (const RacingArrow& arrow : sRacingArrows)
+    {
+        // drawMarker() draws nothing for targets that are on screen
+        LLCoordGL screen_pt;
+        if (camera.projectPosAgentToScreen(gAgent.getPosAgentFromGlobal(arrow.mPos), screen_pt, true))
+        {
+            continue;
+        }
+
+        LLTracker::instance()->drawMarker(arrow.mPos, arrow.mColor, true);
+        if (!arrow.mLabel.empty() && gHUDView)
+        {
+            S32 ax = 0, ay = 0;
+            LLTracker::instance()->getHUDArrowCenter(ax, ay);
+            const bool on_left = ax < gHUDView->getRect().getWidth() / 2;
+            const S32 offset = 20;  // half of the arrow plus a small gap
+            LLFontGL::getFontSansSerifBold()->renderUTF8(
+                arrow.mLabel, 0, on_left ? ax + offset : ax - offset, ay,
+                arrow.mColor,
+                on_left ? LLFontGL::LEFT : LLFontGL::RIGHT, LLFontGL::VCENTER,
+                LLFontGL::NORMAL, LLFontGL::DROP_SHADOW_SOFT);
+        }
+    }
+    sRacingArrows.clear();
 }
 // </FS>
 

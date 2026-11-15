@@ -38,6 +38,7 @@
 #include "llfloaterworldmap.h"
 #include "llworldmapview.h"
 #include "lltracker.h"
+#include "llviewerwindow.h"
 #include "llviewercamera.h"
 #include "llui.h"
 #include "lluictrlfactory.h"
@@ -58,6 +59,7 @@ LLHUDView::~LLHUDView()
 void LLHUDView::draw()
 {
     LLTracker::drawHUDArrow();
+    draw_racing_marker_arrows(); // <FS> Racing Marker
     LLView::draw();
 }
 

@@ -607,6 +607,8 @@ extern S32              gDebugRaycastFaceHit;
 extern LLVector4a       gDebugRaycastStart;
 extern LLVector4a       gDebugRaycastEnd;
 
+void draw_racing_marker_arrows(); // <FS> Racing Marker, called by LLHUDView::draw()
+
 extern bool         gDisplayCameraPos;
 extern bool         gDisplayWindInfo;
 extern bool         gDisplayFOV;
