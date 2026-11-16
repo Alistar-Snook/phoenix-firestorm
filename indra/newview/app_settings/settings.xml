@@ -25382,27 +25382,16 @@ Change of this parameter will affect the layout of buttons in notification toast
       <key>Value</key>
       <integer>1</integer>
     </map>
-    <key>FSRacingMarkerNameFormat</key>
+    <key>FSRacingMarkerName</key>
       <map>
       <key>Comment</key>
-      <string>Racing Marker: name shown in labels (0 = none, 1 = username, 2 = display name)</string>
+      <string>Racing Marker: show the avatar name in the label</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
-      <string>S32</string>
+      <string>Boolean</string>
       <key>Value</key>
       <integer>1</integer>
-    </map>
-    <key>FSRacingMarkerNameMaxWidth</key>
-      <map>
-      <key>Comment</key>
-      <string>Racing Marker: maximum width in pixels of the name in a label; longer names are cut with an ellipsis (0 = no limit)</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>S32</string>
-      <key>Value</key>
-      <integer>180</integer>
     </map>
     <key>FSRacingMarkerDistance</key>
       <map>

@@ -40,11 +40,7 @@
 			<check_box label="Abilità funzioni combattimento" name="FSMouselookCombatFeatures"/>
 			<check_box label="Racing Marker (terza persona)" name="FSRacingMarker" tool_tip="Mostra nome/distanza e una scia dietro agli avatar vicini in terza persona, utile per le gare"/>
 			<check_box label="Etichette vicino agli avatar" name="FSRacingMarkerLabels"/>
-			<combo_box label="Nome:" name="FSRacingMarkerNameFormat">
-				<combo_box.item label="Username" name="username" value="1"/>
-				<combo_box.item label="Nome visualizzato" name="display" value="2"/>
-				<combo_box.item label="Nessun nome" name="none" value="0"/>
-			</combo_box>
+			<check_box label="Mostra nome" name="FSRacingMarkerName"/>
 			<check_box label="Mostra distanza" name="FSRacingMarkerDistance"/>
 			<check_box label="Frecce per avatar fuori vista" name="FSRacingMarkerArrows"/>
 			<check_box label="Scia dietro agli avatar" name="FSRacingMarkerTrail"/>

@@ -3164,8 +3164,7 @@ namespace
         static LLCachedControl<bool> enabled(gSavedSettings, "FSRacingMarker", false);
         static LLCachedControl<F32> range(gSavedSettings, "FSRacingMarkerRange", 300.f);
         static LLCachedControl<bool> show_labels(gSavedSettings, "FSRacingMarkerLabels", true);
-        static LLCachedControl<S32> name_format(gSavedSettings, "FSRacingMarkerNameFormat", 1);  // 0 none, 1 username, 2 display name
-        static LLCachedControl<S32> name_max_width(gSavedSettings, "FSRacingMarkerNameMaxWidth", 180);
+        static LLCachedControl<bool> show_name(gSavedSettings, "FSRacingMarkerName", true);
         static LLCachedControl<bool> show_distance(gSavedSettings, "FSRacingMarkerDistance", true);
         static LLCachedControl<bool> show_trail(gSavedSettings, "FSRacingMarkerTrail", true);
         static LLCachedControl<bool> show_arrows(gSavedSettings, "FSRacingMarkerArrows", true);
@@ -3282,26 +3281,10 @@ namespace
                 LLAvatarName avatar_name;
                 if (!hide_names && LLAvatarNameCache::get(id, &avatar_name))
                 {
-                    switch (name_format)
-                    {
-                        case 2:  name = avatar_name.getDisplayName(true); break;
-                        default: name = avatar_name.getUserName(true); break;  // "first.last", "Resident" trimmed
-                    }
-                }
-                // Long (or very wide) names would fill half the screen: cut them to a pixel width.
-                if (name_max_width > 0)
-                {
-                    LLWString wname = utf8str_to_wstring(name);
-                    const LLFontGL* label_font = LLFontGL::getFontSansSerifBold();
-                    S32 fit = label_font->maxDrawableChars(wname.c_str(), (F32)name_max_width);
-                    if (fit > 0 && fit < (S32)wname.length())
-                    {
-                        wname = wname.substr(0, llmax(fit - 1, 1)) + LLWString(1, (llwchar)0x2026);  // ellipsis
-                        name = wstring_to_utf8str(wname);
-                    }
+                    name = avatar_name.getCompleteName();
                 }
                 const F32 dist = (F32)(target_pos - my_pos).magVec();
-                const bool with_name = name_format != 0 && !hide_names;
+                const bool with_name = show_name && !hide_names;
                 if (with_name && show_distance)
                 {
                     label_text = llformat("%s, %.1fm", name.c_str(), dist);
