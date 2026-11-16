@@ -364,12 +364,12 @@
          label="Range (m):"
          label_width="70"
          show_text="true"
-         left="270"
+         left="290"
          max_val="500"
          min_val="20"
          name="FSRacingMarkerRange"
          top_delta="0"
-         width="240" />
+         width="230" />
         <check_box
          control_name="FSRacingMarkerLabels"
          enabled_control="FSRacingMarker"
@@ -380,7 +380,21 @@
          left="30"
          name="FSRacingMarkerLabels"
          top_pad="6"
-         width="230" />
+         width="150" />
+        <combo_box
+         control_name="FSRacingMarkerNameFormat"
+         enabled_control="FSRacingMarker"
+         follows="left|top"
+         height="18"
+         layout="topleft"
+         left="185"
+         name="FSRacingMarkerNameFormat"
+         top_delta="0"
+         width="95">
+          <combo_box.item label="Username" name="username" value="1" />
+          <combo_box.item label="Display name" name="display" value="2" />
+          <combo_box.item label="No name" name="none" value="0" />
+        </combo_box>
         <check_box
          control_name="FSRacingMarkerTrail"
          enabled_control="FSRacingMarker"
@@ -388,20 +402,20 @@
          height="16"
          label="Trail behind avatars"
          layout="topleft"
-         left="270"
+         left="290"
          name="FSRacingMarkerTrail"
          top_delta="0"
          width="230" />
         <check_box
-         control_name="FSRacingMarkerName"
+         control_name="FSRacingMarkerDistance"
          enabled_control="FSRacingMarker"
          follows="left|top"
          height="16"
-         label="Show name"
+         label="Show distance"
          layout="topleft"
-         left="40"
-         name="FSRacingMarkerName"
-         top_pad="5"
+         left="30"
+         name="FSRacingMarkerDistance"
+         top_pad="8"
          width="200" />
         <slider
          control_name="FSRacingMarkerTrailSeconds"
@@ -415,23 +429,12 @@
          label="Trail length (s):"
          label_width="90"
          show_text="true"
-         left="280"
+         left="300"
          max_val="30"
          min_val="1"
          name="FSRacingMarkerTrailSeconds"
          top_delta="0"
-         width="230" />
-        <check_box
-         control_name="FSRacingMarkerDistance"
-         enabled_control="FSRacingMarker"
-         follows="left|top"
-         height="16"
-         label="Show distance"
-         layout="topleft"
-         left="40"
-         name="FSRacingMarkerDistance"
-         top_pad="5"
-         width="200" />
+         width="220" />
         <check_box
          control_name="FSRacingMarkerArrows"
          enabled_control="FSRacingMarker"
@@ -439,11 +442,11 @@
          height="16"
          label="Arrows for avatars out of view"
          layout="topleft"
-         left="270"
+         left="290"
          name="FSRacingMarkerArrows"
          tool_tip="Arrows at the screen edge point to avatars within range that are not on screen (e.g. behind you). Colors follow the minimap / Radar Mark colors."
-         top_delta="0"
-         width="250" />
+         top_pad="8"
+         width="230" />
     </panel>
 
     <!--Mouselook-->
