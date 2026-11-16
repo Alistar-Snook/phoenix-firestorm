@@ -392,17 +392,22 @@
          name="FSRacingMarkerTrail"
          top_delta="0"
          width="230" />
-        <check_box
-         control_name="FSRacingMarkerName"
+        <combo_box
+         control_name="FSRacingMarkerNameFormat"
          enabled_control="FSRacingMarker"
          follows="left|top"
-         height="16"
-         label="Show name"
+         height="18"
+         label="Name:"
+         label_width="40"
          layout="topleft"
          left="40"
-         name="FSRacingMarkerName"
+         name="FSRacingMarkerNameFormat"
          top_pad="5"
-         width="200" />
+         width="210">
+          <combo_box.item label="Username" name="username" value="1" />
+          <combo_box.item label="Display name" name="display" value="2" />
+          <combo_box.item label="No name" name="none" value="0" />
+        </combo_box>
         <slider
          control_name="FSRacingMarkerTrailSeconds"
          enabled_control="FSRacingMarker"
