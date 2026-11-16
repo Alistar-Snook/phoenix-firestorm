@@ -407,16 +407,17 @@
          top_delta="0"
          width="230" />
         <check_box
-         control_name="FSRacingMarkerDistance"
+         control_name="FSRacingMarkerArrows"
          enabled_control="FSRacingMarker"
          follows="left|top"
          height="16"
-         label="Show distance"
+         label="Arrows for avatars out of view"
          layout="topleft"
          left="30"
-         name="FSRacingMarkerDistance"
+         name="FSRacingMarkerArrows"
+         tool_tip="Arrows at the screen edge point to avatars within range that are not on screen (e.g. behind you). Colors follow the minimap / Radar Mark colors."
          top_pad="8"
-         width="200" />
+         width="230" />
         <slider
          control_name="FSRacingMarkerTrailSeconds"
          enabled_control="FSRacingMarker"
@@ -435,18 +436,6 @@
          name="FSRacingMarkerTrailSeconds"
          top_delta="0"
          width="220" />
-        <check_box
-         control_name="FSRacingMarkerArrows"
-         enabled_control="FSRacingMarker"
-         follows="left|top"
-         height="16"
-         label="Arrows for avatars out of view"
-         layout="topleft"
-         left="290"
-         name="FSRacingMarkerArrows"
-         tool_tip="Arrows at the screen edge point to avatars within range that are not on screen (e.g. behind you). Colors follow the minimap / Radar Mark colors."
-         top_pad="8"
-         width="230" />
     </panel>
 
     <!--Mouselook-->

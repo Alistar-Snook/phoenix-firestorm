@@ -3166,7 +3166,6 @@ namespace
         static LLCachedControl<bool> show_labels(gSavedSettings, "FSRacingMarkerLabels", true);
         static LLCachedControl<S32> name_format(gSavedSettings, "FSRacingMarkerNameFormat", 1);  // 0 none, 1 username, 2 display name
         static LLCachedControl<S32> name_max_width(gSavedSettings, "FSRacingMarkerNameMaxWidth", 180);
-        static LLCachedControl<bool> show_distance(gSavedSettings, "FSRacingMarkerDistance", true);
         static LLCachedControl<bool> show_trail(gSavedSettings, "FSRacingMarkerTrail", true);
         static LLCachedControl<bool> show_arrows(gSavedSettings, "FSRacingMarkerArrows", true);
         static LLCachedControl<F32> trail_seconds(gSavedSettings, "FSRacingMarkerTrailSeconds", 5.f);
@@ -3302,15 +3301,12 @@ namespace
                 }
                 const F32 dist = (F32)(target_pos - my_pos).magVec();
                 const bool with_name = name_format != 0 && !hide_names;
-                if (with_name && show_distance)
+                // The distance is always shown; the name is optional.
+                if (with_name)
                 {
                     label_text = llformat("%s, %.1fm", name.c_str(), dist);
                 }
-                else if (with_name)
-                {
-                    label_text = name;
-                }
-                else if (show_distance)
+                else
                 {
                     label_text = llformat("%.1fm", dist);
                 }

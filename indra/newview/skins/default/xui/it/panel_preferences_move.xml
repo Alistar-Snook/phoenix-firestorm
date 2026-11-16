@@ -45,7 +45,6 @@
 				<combo_box.item label="Nome visualizzato" name="display" value="2"/>
 				<combo_box.item label="Nessun nome" name="none" value="0"/>
 			</combo_box>
-			<check_box label="Mostra distanza" name="FSRacingMarkerDistance"/>
 			<check_box label="Frecce per avatar fuori vista" name="FSRacingMarkerArrows"/>
 			<check_box label="Scia dietro agli avatar" name="FSRacingMarkerTrail"/>
 			<slider label="Raggio (m):" name="FSRacingMarkerRange"/>
