@@ -983,7 +983,10 @@ bool LLPipeline::allocateScreenBufferInternal(U32 resX, U32 resY)
         resY /= res_mod;
     }
 // [SL:KB] - Patch: Settings-RenderResolutionMultiplier | Checked: Catznip-5.4
-    else if (RenderResolutionMultiplier > 0.f && RenderResolutionMultiplier < 1.f)
+    // Only scale the main render target. This function is re-entered above to allocate the (fixed-size) reflection
+    // probe render targets, and those must NOT be scaled: scaling them shrank e.g. 512 to 343 which then got halved to 256
+    // in LLReflectionMap::update(), degrading probe quality for no reason.
+    else if (mRT == &mMainRT && RenderResolutionMultiplier > 0.f && RenderResolutionMultiplier < 1.f)
     {
         resX = (GLuint)(resX * RenderResolutionMultiplier);
         resY = (GLuint)(resY * RenderResolutionMultiplier);
