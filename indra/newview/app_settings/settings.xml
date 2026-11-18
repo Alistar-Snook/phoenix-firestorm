@@ -13310,6 +13310,39 @@ Change of this parameter will affect the layout of buttons in notification toast
     <key>Value</key>
     <real>1.0</real>
   </map>
+  <key>RenderResolutionAuto</key>
+  <map>
+    <key>Comment</key>
+    <string>Automatically lower/raise the 3D render resolution to hold RenderResolutionAutoTargetFPS (overrides RenderResolutionMultiplier while enabled). Needs V-Sync off or a monitor refresh rate above the target to be able to raise resolution again.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>RenderResolutionAutoTargetFPS</key>
+  <map>
+    <key>Comment</key>
+    <string>Target frame rate for RenderResolutionAuto (clamped to 20..240)</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>60.0</real>
+  </map>
+  <key>RenderResolutionAutoMin</key>
+  <map>
+    <key>Comment</key>
+    <string>Lowest render resolution multiplier RenderResolutionAuto may select (0.5 .. 1.0)</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>0.5</real>
+  </map>
   <key>RenderShaderLightingMaxLevel</key>
   <map>
     <key>Comment</key>

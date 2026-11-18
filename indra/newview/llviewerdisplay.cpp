@@ -1193,6 +1193,13 @@ void display(bool rebuild, F32 zoom_factor, int subfield, bool for_snapshot)
 
     display_stats();
 
+    // adaptive render resolution: only feed real, focused, in-world frames
+    if (!for_snapshot && !gTeleportDisplay && gViewerWindow && gViewerWindow->getActive() &&
+        LLStartUp::getStartupState() >= STATE_STARTED)
+    {
+        gPipeline.updateAdaptiveResolution(gFrameIntervalSeconds.value());
+    }
+
     LLAppViewer::instance()->pingMainloopTimeout("Display:Done");
 
     gShiftFrame = false;

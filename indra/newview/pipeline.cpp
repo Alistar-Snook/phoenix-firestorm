@@ -166,6 +166,10 @@ U32 LLPipeline::RenderFSAAType;
 U32 LLPipeline::RenderResolutionDivisor;
 // [SL:KB] - Patch: Settings-RenderResolutionMultiplier | Checked: Catznip-5.4
 F32 LLPipeline::RenderResolutionMultiplier;
+bool LLPipeline::RenderResolutionAuto = false;
+F32 LLPipeline::RenderResolutionAutoTargetFPS = 60.f;
+F32 LLPipeline::RenderResolutionAutoMin = 0.5f;
+F32 LLPipeline::sAdaptiveResolutionMultiplier = 1.f;
 // [/SL:KB]
 bool LLPipeline::RenderUIBuffer;
 S32 LLPipeline::RenderShadowDetail;
@@ -594,6 +598,9 @@ void LLPipeline::init()
     connectRefreshCachedSettingsSafe("RenderResolutionDivisor");
 // [SL:KB] - Patch: Settings-RenderResolutionMultiplier | Checked: Catznip-5.4
     connectRefreshCachedSettingsSafe("RenderResolutionMultiplier");
+    connectRefreshCachedSettingsSafe("RenderResolutionAuto");
+    connectRefreshCachedSettingsSafe("RenderResolutionAutoTargetFPS");
+    connectRefreshCachedSettingsSafe("RenderResolutionAutoMin");
 // [/SL:KB]
     connectRefreshCachedSettingsSafe("RenderUIBuffer");
     connectRefreshCachedSettingsSafe("RenderShadowDetail");
@@ -838,6 +845,144 @@ void LLPipeline::resizeShadowTexture()
     gResizeShadowTexture = false;
 }
 
+//-----------------------------------------------------------------------------
+// Adaptive render resolution
+//
+// Steps the 3D scene resolution multiplier through a fixed ladder to hold a target frame rate. Every change
+// reallocates the screen buffers (a visible hitch), so it is deliberately slow and conservative:
+//  - frames are averaged over a 2 s window, hitches (>0.5 s) are ignored
+//  - after every change we wait for the buffers to settle before measuring again
+//  - a decrease that does not raise the frame rate by at least 10% means we are not GPU/fill-rate bound (CPU bound,
+//    frame limiter, V-Sync...), so it is undone and adaptation pauses for 30 s
+//  - an increase is only taken if the frame rate predicted from the pixel-count ratio still meets the target
+//  - after a decrease, no increase for 20 s (prevents oscillation)
+// NOTE: with V-Sync on (or a refresh rate equal to the target) the real headroom is invisible, so resolution will
+// be lowered when needed but never raised again.
+//-----------------------------------------------------------------------------
+F32 LLPipeline::getEffectiveResolutionMultiplier()
+{
+    return RenderResolutionAuto ? sAdaptiveResolutionMultiplier : RenderResolutionMultiplier;
+}
+
+void LLPipeline::updateAdaptiveResolution(F32 frame_time)
+{
+    static const F32 STEPS[] = { 1.0f, 0.9f, 0.8f, 0.75f, 0.67f, 0.6f, 0.5f };
+    static const S32 STEP_COUNT = (S32)(sizeof(STEPS) / sizeof(STEPS[0]));
+    static const F32 WINDOW_SECONDS = 2.0f;
+    static const F32 SETTLE_SECONDS = 1.5f;
+    static const F32 SUSPEND_SECONDS = 30.0f;
+    static const F32 NO_INCREASE_SECONDS = 20.0f;
+
+    static S32  step_index = 0;
+    static F32  accum_time = 0.f;
+    static S32  accum_frames = 0;
+    static F32  settle_time = 0.f;
+    static F32  suspend_time = 0.f;
+    static F32  no_increase_time = 0.f;
+    static F32  fps_before_decrease = 0.f; // > 0 while verifying that a decrease helped
+    static bool was_auto = false;
+
+    if (!RenderResolutionAuto)
+    {
+        if (was_auto)
+        { // switched off: go back to the manual multiplier
+            was_auto = false;
+            step_index = 0;
+            sAdaptiveResolutionMultiplier = 1.f;
+            accum_time = 0.f;
+            accum_frames = 0;
+            fps_before_decrease = 0.f;
+            gResizeScreenTexture = true;
+        }
+        return;
+    }
+    was_auto = true;
+
+    if (frame_time <= 0.f || frame_time > 0.5f)
+    { // load screen, window drag, big hitch: not representative
+        return;
+    }
+
+    no_increase_time = llmax(0.f, no_increase_time - frame_time);
+
+    if (settle_time > 0.f)
+    {
+        settle_time -= frame_time;
+        return;
+    }
+    if (suspend_time > 0.f)
+    {
+        suspend_time -= frame_time;
+        return;
+    }
+
+    accum_time += frame_time;
+    accum_frames++;
+    if (accum_time < WINDOW_SECONDS)
+    {
+        return;
+    }
+
+    const F32 fps = (F32)accum_frames / accum_time;
+    accum_time = 0.f;
+    accum_frames = 0;
+
+    const F32 target = llclamp(RenderResolutionAutoTargetFPS, 20.f, 240.f);
+
+    // highest allowed step index for the user's minimum
+    S32 max_index = 0;
+    for (S32 i = 0; i < STEP_COUNT; ++i)
+    {
+        if (STEPS[i] >= RenderResolutionAutoMin - 0.001f)
+        {
+            max_index = i;
+        }
+    }
+
+    S32 new_index = step_index;
+
+    if (fps_before_decrease > 0.f)
+    { // we just lowered the resolution, did it help?
+        const bool helped = fps > fps_before_decrease * 1.1f;
+        fps_before_decrease = 0.f;
+        if (!helped && step_index > 0)
+        {
+            new_index = step_index - 1;
+            suspend_time = SUSPEND_SECONDS;
+            LL_INFOS("AdaptiveRes") << "Lower resolution did not help (CPU bound or frame limited), reverting to "
+                                    << STEPS[new_index] << " and pausing" << LL_ENDL;
+        }
+    }
+    else if (fps < target * 0.92f && step_index < max_index)
+    {
+        fps_before_decrease = fps;
+        new_index = step_index + 1;
+        no_increase_time = NO_INCREASE_SECONDS;
+    }
+    else if (step_index > 0 && no_increase_time <= 0.f)
+    {
+        const F32 ratio = STEPS[step_index] / STEPS[step_index - 1];
+        const F32 predicted = fps * ratio * ratio; // assumes cost scales with pixel count
+        if (predicted > target * 1.05f)
+        {
+            new_index = step_index - 1;
+        }
+    }
+
+    // user may have raised the minimum above the current step
+    new_index = llmin(new_index, max_index);
+
+    if (new_index != step_index)
+    {
+        LL_INFOS("AdaptiveRes") << "fps " << fps << " target " << target << " : multiplier "
+                                << STEPS[step_index] << " -> " << STEPS[new_index] << LL_ENDL;
+        step_index = new_index;
+        sAdaptiveResolutionMultiplier = STEPS[step_index];
+        gResizeScreenTexture = true;
+        settle_time = SETTLE_SECONDS;
+    }
+}
+
 void LLPipeline::resizeScreenTexture()
 {
     if (gPipeline.shadersLoaded())
@@ -853,10 +998,10 @@ void LLPipeline::resizeScreenTexture()
             scaledResX /= RenderResolutionDivisor;
             scaledResY /= RenderResolutionDivisor;
         }
-        else if (RenderResolutionMultiplier > 0.f && RenderResolutionMultiplier < 1.f)
+        else if (const F32 res_mult = getEffectiveResolutionMultiplier(); res_mult > 0.f && res_mult < 1.f)
         {
-            scaledResX = (GLuint)(scaledResX * RenderResolutionMultiplier);
-            scaledResY = (GLuint)(scaledResY * RenderResolutionMultiplier);
+            scaledResX = (GLuint)(scaledResX * res_mult);
+            scaledResY = (GLuint)(scaledResY * res_mult);
         }
 // [/SL:KB]
 
@@ -986,10 +1131,10 @@ bool LLPipeline::allocateScreenBufferInternal(U32 resX, U32 resY)
     // Only scale the main render target. This function is re-entered above to allocate the (fixed-size) reflection
     // probe render targets, and those must NOT be scaled: scaling them shrank e.g. 512 to 343 which then got halved to 256
     // in LLReflectionMap::update(), degrading probe quality for no reason.
-    else if (mRT == &mMainRT && RenderResolutionMultiplier > 0.f && RenderResolutionMultiplier < 1.f)
+    else if (const F32 res_mult = getEffectiveResolutionMultiplier(); mRT == &mMainRT && res_mult > 0.f && res_mult < 1.f)
     {
-        resX = (GLuint)(resX * RenderResolutionMultiplier);
-        resY = (GLuint)(resY * RenderResolutionMultiplier);
+        resX = (GLuint)(resX * res_mult);
+        resY = (GLuint)(resY * res_mult);
     }
 // [/SL:KB]
 
@@ -1241,6 +1386,9 @@ void LLPipeline::refreshCachedSettings()
     RenderResolutionDivisor = gSavedSettings.getU32("RenderResolutionDivisor");
 // [SL:KB] - Patch: Settings-RenderResolutionMultiplier | Checked: Catznip-5.4
     RenderResolutionMultiplier = gSavedSettings.getF32("RenderResolutionMultiplier");
+    RenderResolutionAuto = gSavedSettings.getBOOL("RenderResolutionAuto");
+    RenderResolutionAutoTargetFPS = gSavedSettings.getF32("RenderResolutionAutoTargetFPS");
+    RenderResolutionAutoMin = gSavedSettings.getF32("RenderResolutionAutoMin");
 // [/SL:KB]
     RenderUIBuffer = gSavedSettings.getBOOL("RenderUIBuffer");
     RenderShadowDetail = gSavedSettings.getS32("RenderShadowDetail");

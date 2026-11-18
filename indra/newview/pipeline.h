@@ -1085,6 +1085,15 @@ public:
 // [SL:KB] - Patch: Settings-RenderResolutionMultiplier | Checked: Catznip-5.4
     static F32 RenderResolutionMultiplier;
 // [/SL:KB]
+    // Adaptive render resolution (see updateAdaptiveResolution)
+    static bool RenderResolutionAuto;
+    static F32 RenderResolutionAutoTargetFPS;
+    static F32 RenderResolutionAutoMin;
+    static F32 sAdaptiveResolutionMultiplier;
+    // multiplier actually applied to the 3D scene: adaptive value when auto is on, the manual setting otherwise
+    static F32 getEffectiveResolutionMultiplier();
+    // call once per frame with the real frame-to-frame time in seconds
+    void updateAdaptiveResolution(F32 frame_time);
     static bool RenderUIBuffer;
     static S32 RenderShadowDetail;
     static S32 RenderShadowSplits;
